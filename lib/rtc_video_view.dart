@@ -108,12 +108,14 @@ class RTCVideoRenderer {
 
 class RTCVideoView extends StatefulWidget {
   final RTCVideoRenderer _renderer;
+  final VideoBuilder videoBuilder;
   final Function(int rotation) onVideoRotationChanged;
   final Function(Size size) onVideoSizeChanged;
 
   RTCVideoView(
     this._renderer, {
     Key key,
+    this.videoBuilder,
     this.onVideoSizeChanged,
     this.onVideoRotationChanged,
   }) : super(key: key);
@@ -172,6 +174,18 @@ class _RTCVideoViewState extends State<RTCVideoView> {
   }
 
   Widget _buildVideoView(BoxConstraints constraints) {
+    Widget child = new Transform(
+        transform: Matrix4.identity()
+          ..rotateY(_mirror ? -pi : 0.0),
+        alignment: FractionalOffset.center,
+        child:
+        new Texture(textureId: widget._renderer._textureId),
+    );
+    final width = constraints.maxHeight * _aspectRatio;
+    final height = constraints.maxHeight;
+    if (widget.videoBuilder != null) {
+      child = widget.videoBuilder(Size(width, height), child);
+    }
     return Container(
         width: constraints.maxWidth,
         height: constraints.maxHeight,
@@ -182,14 +196,9 @@ class _RTCVideoViewState extends State<RTCVideoView> {
                     : BoxFit.cover,
             child: new Center(
                 child: new SizedBox(
-                    width: constraints.maxHeight * _aspectRatio,
-                    height: constraints.maxHeight,
-                    child: new Transform(
-                        transform: Matrix4.identity()
-                          ..rotateY(_mirror ? -pi : 0.0),
-                        alignment: FractionalOffset.center,
-                        child:
-                            new Texture(textureId: widget._renderer._textureId))))));
+                    width: width,
+                    height: height,
+                    child: child))));
   }
 
   @override
@@ -204,3 +213,5 @@ class _RTCVideoViewState extends State<RTCVideoView> {
     });
   }
 }
+
+typedef VideoBuilder = Widget Function(Size size, Widget child);
