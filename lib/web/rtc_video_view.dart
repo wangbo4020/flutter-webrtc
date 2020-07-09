@@ -154,7 +154,12 @@ class RTCVideoRenderer {
 
 class RTCVideoView extends StatefulWidget {
   final RTCVideoRenderer _renderer;
-  RTCVideoView(this._renderer);
+  final Function(int rotation) onVideoRotationChanged;
+  final Function(Size size) onVideoSizeChanged;
+  RTCVideoView(this._renderer,{
+    this.onVideoSizeChanged,
+    this.onVideoRotationChanged,
+  });
   @override
   _RTCVideoViewState createState() => new _RTCVideoViewState(_renderer);
 }
@@ -173,11 +178,24 @@ class _RTCVideoViewState extends State<RTCVideoView> {
     _aspectRatio = _renderer.aspectRatio;
     _mirror = _renderer.mirror;
     _objectFit = _renderer.objectFit;
+
+    _renderer.onVideoSizeChanged = (tid, width, height) {
+      if (widget.onVideoSizeChanged != null) {
+        widget.onVideoSizeChanged(Size(width, height));
+      }
+    };
+    _renderer.onVideoRotationChanged = (tid, rotation) {
+      if (widget.onVideoRotationChanged != null) {
+        widget.onVideoRotationChanged(rotation);
+      }
+    };
   }
 
   @override
   void dispose() {
     super.dispose();
+    _renderer.onVideoRotationChanged = null;
+    _renderer.onVideoSizeChanged = null;
     _renderer.onStateChanged = null;
   }
 
