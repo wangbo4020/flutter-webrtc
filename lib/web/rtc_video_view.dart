@@ -154,9 +154,11 @@ class RTCVideoRenderer {
 
 class RTCVideoView extends StatefulWidget {
   final RTCVideoRenderer _renderer;
+  final VideoBuilder videoBuilder;
   final Function(int rotation) onVideoRotationChanged;
   final Function(Size size) onVideoSizeChanged;
   RTCVideoView(this._renderer,{
+    this.videoBuilder,
     this.onVideoSizeChanged,
     this.onVideoRotationChanged,
   });
@@ -211,13 +213,20 @@ class _RTCVideoViewState extends State<RTCVideoView> {
 
   Widget _buildVideoView(BoxConstraints constraints) {
     _renderer.findAndApply(constraints.biggest);
+
+    final width = constraints.maxHeight * _aspectRatio;
+    final height = constraints.maxHeight;
+    Widget child = _renderer.htmlElementView ?? Container();
+    if (widget.videoBuilder != null) {
+      child = widget.videoBuilder(Size(width, height), child);
+    }
     return Container(
         width: constraints.maxWidth,
         height: constraints.maxHeight,
         child: new SizedBox(
-            width: constraints.maxHeight * _aspectRatio,
-            height: constraints.maxHeight,
-            child: _renderer.htmlElementView ?? Container()));
+            width: width,
+            height: height,
+            child: child));
   }
 
   @override
@@ -230,3 +239,5 @@ class _RTCVideoViewState extends State<RTCVideoView> {
     });
   }
 }
+
+typedef VideoBuilder = Widget Function(Size size, Widget child);
