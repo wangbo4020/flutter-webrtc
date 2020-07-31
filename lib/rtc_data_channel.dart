@@ -83,6 +83,8 @@ class RTCDataChannel {
   MethodChannel _channel = WebRTC.methodChannel();
   StreamSubscription<dynamic> _eventSubscription;
 
+  int get id => _dataChannelId;
+  String get label => _label;
   /// Get current state.
   RTCDataChannelState get state => _state;
 
