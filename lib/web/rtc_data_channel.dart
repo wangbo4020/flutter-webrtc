@@ -82,6 +82,8 @@ class RTCDataChannel {
   RTCDataChannelOnMessageCallback onMessage;
   RTCDataChannelState _state = RTCDataChannelState.RTCDataChannelConnecting;
 
+  int get id => _jsDc.id;
+  String get label => _jsDc.label;
   /// Get current state.
   RTCDataChannelState get state => _state;
 
