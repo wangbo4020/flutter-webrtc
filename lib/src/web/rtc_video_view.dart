@@ -4,8 +4,8 @@ import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../enums.dart';
 import './ui_fake.dart' if (dart.library.html) 'dart:ui' as ui;
+import '../enums.dart';
 import 'media_stream.dart';
 
 // An error code value to error name Map.
@@ -39,11 +39,13 @@ class RTCVideoValue {
     this.rotation = 0,
     this.renderVideo = false,
   });
+
   static const RTCVideoValue empty = RTCVideoValue();
   final double width;
   final double height;
   final int rotation;
   final bool renderVideo;
+
   double get aspectRatio {
     if (width == 0.0 || height == 0.0) {
       return 1.0;
@@ -172,6 +174,7 @@ class RTCVideoView extends StatefulWidget {
     Key key,
     this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
     this.mirror = false,
+    this.videoBuilder,
   })  : assert(objectFit != null),
         assert(mirror != null),
         super(key: key);
@@ -179,6 +182,8 @@ class RTCVideoView extends StatefulWidget {
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
   final bool mirror;
+  final VideoBuilder videoBuilder;
+
   @override
   _RTCVideoViewState createState() => _RTCVideoViewState();
 }
@@ -206,14 +211,27 @@ class _RTCVideoViewState extends State<RTCVideoView> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
+      final width = constraints.maxWidth;
+      final height = constraints.maxHeight;
+
+      Widget child;
+      if (widget._renderer.renderVideo) {
+        child = buildVideoElementView(widget.objectFit, widget.mirror);
+        if (widget.videoBuilder != null) {
+          child = widget.videoBuilder(Size(width, height), child);
+        }
+      } else {
+        child = Container();
+      }
+
       return Center(
           child: Container(
-        width: constraints.maxWidth,
-        height: constraints.maxHeight,
-        child: widget._renderer.renderVideo
-            ? buildVideoElementView(widget.objectFit, widget.mirror)
-            : Container(),
+        width: width,
+        height: height,
+        child: child,
       ));
     });
   }
 }
+
+typedef VideoBuilder = Widget Function(Size size, Widget child);

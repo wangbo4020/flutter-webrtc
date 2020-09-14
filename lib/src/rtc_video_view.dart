@@ -16,11 +16,13 @@ class RTCVideoValue {
     this.rotation = 0,
     this.renderVideo = false,
   });
+
   static const empty = RTCVideoValue();
   final double width;
   final double height;
   final int rotation;
   final bool renderVideo;
+
   double get aspectRatio {
     if (width == 0.0 || height == 0.0) {
       return 1.0;
@@ -127,6 +129,7 @@ class RTCVideoView extends StatelessWidget {
     Key key,
     this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
     this.mirror = false,
+    this.videoBuilder,
   })  : assert(objectFit != null),
         assert(mirror != null),
         super(key: key);
@@ -134,6 +137,7 @@ class RTCVideoView extends StatelessWidget {
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
   final bool mirror;
+  final VideoBuilder videoBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -156,9 +160,14 @@ class RTCVideoView extends StatelessWidget {
               valueListenable: _renderer,
               builder:
                   (BuildContext context, RTCVideoValue value, Widget child) {
+                final width = constraints.maxHeight * value.aspectRatio;
+                final height = constraints.maxHeight;
+                if (videoBuilder != null) {
+                  child = videoBuilder(Size(width, height), child);
+                }
                 return SizedBox(
-                  width: constraints.maxHeight * value.aspectRatio,
-                  height: constraints.maxHeight,
+                  width: width,
+                  height: height,
                   child: value.renderVideo ? child : Container(),
                 );
               },
@@ -176,3 +185,5 @@ class RTCVideoView extends StatelessWidget {
     );
   }
 }
+
+typedef VideoBuilder = Widget Function(Size size, Widget child);
