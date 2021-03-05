@@ -34,6 +34,11 @@ class RTCDataChannelWeb extends RTCDataChannel {
 
   final html.RtcDataChannel _jsDc;
   RTCDataChannelState _state = RTCDataChannelState.RTCDataChannelConnecting;
+  @override
+  int get id => _jsDc.id;
+  /// Get label.
+  @override
+  String get label => _jsDc.label;
 
   @override
   RTCDataChannelState get state => _state;

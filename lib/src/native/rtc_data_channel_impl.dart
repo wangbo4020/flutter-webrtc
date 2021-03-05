@@ -32,7 +32,10 @@ class RTCDataChannelNative extends RTCDataChannel {
   @override
   RTCDataChannelState get state => _state;
 
+  @override
+  int get id => _dataChannelId;
   /// Get label.
+  @override
   String get label => _label;
 
   final _stateChangeController =

@@ -71,8 +71,8 @@ abstract class RTCDataChannel {
   RTCDataChannelStateCallback onDataChannelState;
   RTCDataChannelOnMessageCallback onMessage;
 
-  int get id => _jsDc.id;
-  String get label => _jsDc.label;
+  int get id;
+  String get label;
 
   /// Get current state.
   RTCDataChannelState get state;
