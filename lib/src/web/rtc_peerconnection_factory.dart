@@ -1,27 +1,29 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:html' as html;
 
-import 'media_stream.dart';
-import 'rtc_peerconnection.dart';
+import '../interface/media_recorder.dart';
+import '../interface/media_stream.dart';
+import '../interface/navigator.dart';
+import '../interface/rtc_peerconnection.dart';
+import '../interface/rtc_video_renderer.dart';
+import 'factory_impl.dart';
 
 Future<RTCPeerConnection> createPeerConnection(
     Map<String, dynamic> configuration,
-    Map<String, dynamic> constraints) async {
-  final constr = (constraints != null && constraints.isNotEmpty)
-      ? constraints
-      : {
-          'mandatory': {},
-          'optional': [
-            {'DtlsSrtpKeyAgreement': true},
-          ],
-        };
-  final jsRtcPc = html.RtcPeerConnection(configuration, constr);
-  final _peerConnectionId = base64Encode(jsRtcPc.toString().codeUnits);
-  return RTCPeerConnection(_peerConnectionId, jsRtcPc);
+    [Map<String, dynamic> constraints]) {
+  return RTCFactoryWeb.instance
+      .createPeerConnection(configuration, constraints);
 }
 
-Future<MediaStream> createLocalMediaStream(String label) async {
-  final jsMs = html.MediaStream();
-  return MediaStream(jsMs, 'local');
+Future<MediaStream> createLocalMediaStream(String label) {
+  return RTCFactoryWeb.instance.createLocalMediaStream(label);
 }
+
+MediaRecorder mediaRecorder() {
+  return RTCFactoryWeb.instance.mediaRecorder();
+}
+
+VideoRenderer videoRenderer() {
+  return RTCFactoryWeb.instance.videoRenderer();
+}
+
+Navigator get navigator => RTCFactoryWeb.instance.navigator;

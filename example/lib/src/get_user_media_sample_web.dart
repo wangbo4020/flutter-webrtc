@@ -20,6 +20,8 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   final _localRenderer = RTCVideoRenderer();
   bool _inCalling = false;
   MediaRecorder _mediaRecorder;
+
+  List<MediaDeviceInfo> _cameras;
   bool get _isRec => _mediaRecorder != null;
   List<dynamic> cameras;
 
@@ -27,9 +29,10 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   void initState() {
     super.initState();
     initRenderers();
-    MediaDevices.getSources().then((md) {
+
+    navigator.mediaDevices.enumerateDevices().then((md) {
       setState(() {
-        cameras = md.where((d) => d['kind'] == 'videoinput').toList();
+        cameras = md.where((d) => d.kind == 'videoinput').toList();
       });
     });
   }
@@ -38,7 +41,7 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   void deactivate() {
     super.deactivate();
     if (_inCalling) {
-      _hangUp();
+      _stop();
     }
     _localRenderer.dispose();
   }
@@ -62,7 +65,8 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
     };
 
     try {
-      var stream = await MediaDevices.getUserMedia(mediaConstraints);
+      var stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      _cameras = await Helper.cameras;
       _localStream = stream;
       _localRenderer.srcObject = _localStream;
     } catch (e) {
@@ -75,13 +79,20 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
     });
   }
 
-  void _hangUp() async {
+  Future<void> _stop() async {
     try {
-      await _localStream.dispose();
+      if (_localStream != null) {
+        await _localStream.dispose();
+        _localStream = null;
+      }
       _localRenderer.srcObject = null;
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  void _hangUp() async {
+    await _stop();
     setState(() {
       _inCalling = false;
     });
@@ -135,6 +146,21 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
                   icon: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
                   onPressed: _isRec ? _stopRecording : _startRecording,
                 ),
+                PopupMenuButton<String>(
+                  onSelected: _switchCamera,
+                  itemBuilder: (BuildContext context) {
+                    return _cameras.map((device) {
+                      return PopupMenuItem<String>(
+                        value: device.deviceId,
+                        child: Text(device.label),
+                      );
+                    }).toList();
+                  },
+                ),
+                // IconButton(
+                //   icon: Icon(Icons.settings),
+                //   onPressed: _switchCamera,
+                // )
               ]
             : null,
       ),
@@ -157,5 +183,11 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
         child: Icon(_inCalling ? Icons.call_end : Icons.phone),
       ),
     );
+  }
+
+  void _switchCamera(String deviceId) async {
+    await Helper.switchCamera(
+        _localStream.getVideoTracks()[0], deviceId, _localStream);
+    setState(() {});
   }
 }

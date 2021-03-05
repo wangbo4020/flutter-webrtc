@@ -19,6 +19,9 @@ class _MyAppState extends State<LoopBackSample> {
   bool _inCalling = false;
   Timer _timer;
 
+  String get sdpSemantics =>
+      WebRTC.platformIsWindows ? 'plan-b' : 'unified-plan';
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +45,7 @@ class _MyAppState extends State<LoopBackSample> {
 
   void handleStatsReport(Timer timer) async {
     if (_peerConnection != null) {
+/*
       var reports = await _peerConnection.getStats();
       reports.forEach((report) {
         print('report => { ');
@@ -55,6 +59,18 @@ class _MyAppState extends State<LoopBackSample> {
         print('    }');
         print('}');
       });
+*/
+      /*
+      var senders = await _peerConnection.getSenders();
+      var canInsertDTMF = await senders[0].dtmfSender.canInsertDtmf();
+      print(canInsertDTMF);
+      await senders[0].dtmfSender.insertDTMF('1');
+      var receivers = await _peerConnection.getReceivers();
+      print(receivers[0].track.id);
+      var transceivers = await _peerConnection.getTransceivers();
+      print(transceivers[0].sender.parameters);
+      print(transceivers[0].receiver.parameters);
+      */
     }
   }
 
@@ -70,8 +86,12 @@ class _MyAppState extends State<LoopBackSample> {
     print(state);
   }
 
+  void _onPeerConnectionState(RTCPeerConnectionState state) {
+    print(state);
+  }
+
   void _onAddStream(MediaStream stream) {
-    print('addStream: ' + stream.id);
+    print('New stream: ' + stream.id);
     _remoteRenderer.srcObject = stream;
   }
 
@@ -80,8 +100,20 @@ class _MyAppState extends State<LoopBackSample> {
   }
 
   void _onCandidate(RTCIceCandidate candidate) {
+    if (candidate == null) {
+      print('onCandidate: complete!');
+      return;
+    }
     print('onCandidate: ' + candidate.candidate);
     _peerConnection.addCandidate(candidate);
+  }
+
+  void _onTrack(RTCTrackEvent event) {
+    print('onTrack');
+    if (event.track.kind == 'video' && event.streams.isNotEmpty) {
+      print('New stream: ' + event.streams[0].id);
+      _remoteRenderer.srcObject = event.streams[0];
+    }
   }
 
   void _onRenegotiationNeeded() {
@@ -107,7 +139,8 @@ class _MyAppState extends State<LoopBackSample> {
     var configuration = <String, dynamic>{
       'iceServers': [
         {'url': 'stun:stun.l.google.com:19302'},
-      ]
+      ],
+      'sdpSemantics': sdpSemantics
     };
 
     final offerSdpConstraints = <String, dynamic>{
@@ -128,26 +161,102 @@ class _MyAppState extends State<LoopBackSample> {
     if (_peerConnection != null) return;
 
     try {
-      _localStream = await MediaDevices.getUserMedia(mediaConstraints);
-      _localRenderer.srcObject = _localStream;
       _peerConnection =
           await createPeerConnection(configuration, loopbackConstraints);
 
       _peerConnection.onSignalingState = _onSignalingState;
       _peerConnection.onIceGatheringState = _onIceGatheringState;
       _peerConnection.onIceConnectionState = _onIceConnectionState;
+      _peerConnection.onConnectionState = _onPeerConnectionState;
       _peerConnection.onAddStream = _onAddStream;
       _peerConnection.onRemoveStream = _onRemoveStream;
       _peerConnection.onIceCandidate = _onCandidate;
       _peerConnection.onRenegotiationNeeded = _onRenegotiationNeeded;
 
-      await _peerConnection.addStream(_localStream);
+      _localStream =
+          await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      _localRenderer.srcObject = _localStream;
+
+      switch (sdpSemantics) {
+        case 'plan-b':
+          await _peerConnection.addStream(_localStream);
+          break;
+        case 'unified-plan':
+          _peerConnection.onTrack = _onTrack;
+          _localStream.getTracks().forEach((track) {
+            _peerConnection.addTrack(track, _localStream);
+          });
+          break;
+      }
+
+      /*
+      await _peerConnection.addTransceiver(
+        track: _localStream.getAudioTracks()[0],
+        init: RTCRtpTransceiverInit(
+            direction: TransceiverDirection.SendRecv, streams: [_localStream]),
+      );
+      */
+      /*
+      // ignore: unused_local_variable
+      var transceiver = await _peerConnection.addTransceiver(
+        track: _localStream.getVideoTracks()[0],
+        init: RTCRtpTransceiverInit(
+            direction: TransceiverDirection.SendRecv, streams: [_localStream]),
+      );
+      */
+
+      /*
+      // Unified-Plan Simulcast
+      await _peerConnection.addTransceiver(
+          track: _localStream.getVideoTracks()[0],
+          init: RTCRtpTransceiverInit(
+            direction: TransceiverDirection.SendOnly,
+            streams: [_localStream],
+            sendEncodings: [
+              // for firefox order matters... first high resolution, then scaled resolutions...
+              RTCRtpEncoding(
+                rid: 'f',
+                maxBitrate: 900000,
+                numTemporalLayers: 3,
+              ),
+              RTCRtpEncoding(
+                rid: 'h',
+                numTemporalLayers: 3,
+                maxBitrate: 300000,
+                scaleResolutionDownBy: 2.0,
+              ),
+              RTCRtpEncoding(
+                rid: 'q',
+                numTemporalLayers: 3,
+                maxBitrate: 100000,
+                scaleResolutionDownBy: 4.0,
+              ),
+            ],
+          ));
+      
+      await _peerConnection.addTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo);
+      await _peerConnection.addTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo);
+      await _peerConnection.addTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+          init:
+              RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly));
+      */
       var description = await _peerConnection.createOffer(offerSdpConstraints);
-      print(description.sdp);
+      var sdp = description.sdp;
+      print('sdp = $sdp');
       await _peerConnection.setLocalDescription(description);
       //change for loopback.
       description.type = 'answer';
       await _peerConnection.setRemoteDescription(description);
+
+      /* Unfied-Plan replaceTrack
+      var stream = await MediaDevices.getDisplayMedia(mediaConstraints);
+      _localRenderer.srcObject = _localStream;
+      await transceiver.sender.replaceTrack(stream.getVideoTracks()[0]);
+      // do re-negotiation ....
+      */
     } catch (e) {
       print(e.toString());
     }
@@ -179,7 +288,7 @@ class _MyAppState extends State<LoopBackSample> {
   void _sendDtmf() async {
     var dtmfSender =
         _peerConnection.createDtmfSender(_localStream.getAudioTracks()[0]);
-    await dtmfSender.sendDtmf('123#');
+    await dtmfSender.insertDTMF('123#');
   }
 
   @override

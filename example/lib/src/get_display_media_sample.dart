@@ -31,7 +31,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
   void deactivate() {
     super.deactivate();
     if (_inCalling) {
-      _hangUp();
+      _stop();
     }
     if (_timer != null) _timer.cancel();
     _localRenderer.dispose();
@@ -49,10 +49,15 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> _makeCall() async {
-    final mediaConstraints = <String, dynamic>{'audio': false, 'video': true};
+    final mediaConstraints = <String, dynamic>{'audio': true, 'video': true};
 
     try {
-      var stream = await MediaDevices.getDisplayMedia(mediaConstraints);
+      var stream = await navigator.getDisplayMedia(mediaConstraints);
+      stream.getVideoTracks()[0].onEnded = () {
+        print(
+            'By adding a listener on onEnded you can: 1) catch stop video sharing on Web');
+      };
+
       _localStream = stream;
       _localRenderer.srcObject = _localStream;
     } catch (e) {
@@ -67,13 +72,20 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     _timer = Timer.periodic(Duration(milliseconds: 100), handleTimer);
   }
 
-  void _hangUp() async {
+  Future<void> _stop() async {
     try {
-      await _localStream.dispose();
+      if (_localStream != null) {
+        await _localStream.dispose();
+        _localStream = null;
+      }
       _localRenderer.srcObject = null;
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  Future<void> _hangUp() async {
+    await _stop();
     setState(() {
       _inCalling = false;
     });
@@ -85,6 +97,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     return Scaffold(
       appBar: AppBar(
         title: Text('GetUserMedia API Test'),
+        actions: [],
       ),
       body: OrientationBuilder(
         builder: (context, orientation) {
