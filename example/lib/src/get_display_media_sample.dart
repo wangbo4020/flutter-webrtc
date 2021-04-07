@@ -15,10 +15,10 @@ class GetDisplayMediaSample extends StatefulWidget {
 }
 
 class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
-  MediaStream _localStream;
+  MediaStream? _localStream;
   final _localRenderer = RTCVideoRenderer();
   bool _inCalling = false;
-  Timer _timer;
+  Timer? _timer;
   var _counter = 0;
 
   @override
@@ -33,7 +33,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     if (_inCalling) {
       _stop();
     }
-    if (_timer != null) _timer.cancel();
+    _timer?.cancel();
     _localRenderer.dispose();
   }
 
@@ -52,7 +52,8 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     final mediaConstraints = <String, dynamic>{'audio': true, 'video': true};
 
     try {
-      var stream = await navigator.getDisplayMedia(mediaConstraints);
+      var stream =
+          await navigator.mediaDevices.getDisplayMedia(mediaConstraints);
       stream.getVideoTracks()[0].onEnded = () {
         print(
             'By adding a listener on onEnded you can: 1) catch stop video sharing on Web');
@@ -74,10 +75,8 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
 
   Future<void> _stop() async {
     try {
-      if (_localStream != null) {
-        await _localStream.dispose();
-        _localStream = null;
-      }
+      await _localStream?.dispose();
+      _localStream = null;
       _localRenderer.srcObject = null;
     } catch (e) {
       print(e.toString());
@@ -89,7 +88,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     setState(() {
       _inCalling = false;
     });
-    _timer.cancel();
+    _timer?.cancel();
   }
 
   @override
@@ -110,8 +109,8 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
                 margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
-                child: RTCVideoView(_localRenderer),
                 decoration: BoxDecoration(color: Colors.black54),
+                child: RTCVideoView(_localRenderer),
               )
             ]),
           );

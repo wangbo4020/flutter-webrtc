@@ -12,14 +12,14 @@ abstract class RTCRtpReceiver {
   Future<List<StatsReport>> getStats();
 
   /// public:
-  OnFirstPacketReceivedCallback onFirstPacketReceived;
+  OnFirstPacketReceivedCallback? onFirstPacketReceived;
 
   /// The WebRTC specification only defines RTCRtpParameters in terms of senders,
   /// but this API also applies them to receivers, similar to ORTC:
   /// http://ortc.org/wp-content/uploads/2016/03/ortc.html#rtcrtpparameters*.
   RTCRtpParameters get parameters;
 
-  MediaStreamTrack get track;
+  MediaStreamTrack? get track;
 
   String get receiverId;
 }

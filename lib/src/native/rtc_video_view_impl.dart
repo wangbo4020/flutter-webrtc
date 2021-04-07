@@ -10,21 +10,18 @@ import 'rtc_video_renderer_impl.dart';
 class RTCVideoView extends StatelessWidget {
   RTCVideoView(
     this._renderer, {
-    Key key,
+    Key? key,
     this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
     this.mirror = false,
     this.filterQuality = FilterQuality.low,
     this.videoBuilder,
-  })  : assert(objectFit != null),
-        assert(mirror != null),
-        assert(filterQuality != null),
-        super(key: key);
+  }) : super(key: key);
 
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
   final bool mirror;
   final FilterQuality filterQuality;
-  final VideoBuilder videoBuilder;
+  final VideoBuilder? videoBuilder;
 
   RTCVideoRendererNative get videoRenderer =>
       _renderer.delegate as RTCVideoRendererNative;
@@ -42,6 +39,7 @@ class RTCVideoView extends StatelessWidget {
         width: constraints.maxWidth,
         height: constraints.maxHeight,
         child: FittedBox(
+          clipBehavior: Clip.hardEdge,
           fit: objectFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
               ? BoxFit.contain
               : BoxFit.cover,
@@ -49,11 +47,11 @@ class RTCVideoView extends StatelessWidget {
             child: ValueListenableBuilder<RTCVideoValue>(
               valueListenable: videoRenderer,
               builder:
-                  (BuildContext context, RTCVideoValue value, Widget child) {
+                  (BuildContext context, RTCVideoValue value, Widget? child) {
                 final width = constraints.maxHeight * value.aspectRatio;
                 final height = constraints.maxHeight;
                 if (videoBuilder != null) {
-                  child = videoBuilder(Size(width, height), child);
+                  child = videoBuilder!(Size(width, height), child);
                 }
                 return SizedBox(
                   width: width,
@@ -67,7 +65,7 @@ class RTCVideoView extends StatelessWidget {
                 child: videoRenderer.textureId != null &&
                         videoRenderer.srcObject != null
                     ? Texture(
-                        textureId: videoRenderer.textureId,
+                        textureId: videoRenderer.textureId!,
                         filterQuality: filterQuality,
                       )
                     : Container(),
@@ -80,4 +78,4 @@ class RTCVideoView extends StatelessWidget {
   }
 }
 
-typedef VideoBuilder = Widget Function(Size size, Widget child);
+typedef VideoBuilder = Widget Function(Size size, Widget? child);

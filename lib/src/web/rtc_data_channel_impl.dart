@@ -12,33 +12,27 @@ class RTCDataChannelWeb extends RTCDataChannel {
     _jsDc.onClose.listen((_) {
       _state = RTCDataChannelState.RTCDataChannelClosed;
       _stateChangeController.add(_state);
-      if (onDataChannelState != null) {
-        onDataChannelState(_state);
-      }
+      onDataChannelState?.call(_state);
     });
     _jsDc.onOpen.listen((_) {
       _state = RTCDataChannelState.RTCDataChannelOpen;
       _stateChangeController.add(_state);
-      if (onDataChannelState != null) {
-        onDataChannelState(_state);
-      }
+      onDataChannelState?.call(_state);
     });
     _jsDc.onMessage.listen((event) async {
       var msg = await _parse(event.data);
       _messageController.add(msg);
-      if (onMessage != null) {
-        onMessage(msg);
-      }
+      onMessage?.call(msg);
     });
   }
 
   final html.RtcDataChannel _jsDc;
   RTCDataChannelState _state = RTCDataChannelState.RTCDataChannelConnecting;
   @override
-  int get id => _jsDc.id;
+  int get id => _jsDc.id!;
   /// Get label.
   @override
-  String get label => _jsDc.label;
+  String get label => _jsDc.label!;
 
   @override
   RTCDataChannelState get state => _state;

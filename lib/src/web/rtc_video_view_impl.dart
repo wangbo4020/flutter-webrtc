@@ -7,21 +7,18 @@ import '../web/rtc_video_renderer_impl.dart';
 class RTCVideoView extends StatefulWidget {
   RTCVideoView(
     this._renderer, {
-    Key key,
+    Key? key,
     this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
     this.mirror = false,
     this.filterQuality = FilterQuality.low,
     this.videoBuilder,
-  })  : assert(objectFit != null),
-        assert(mirror != null),
-        assert(filterQuality != null),
-        super(key: key);
+  }) : super(key: key);
 
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
   final bool mirror;
   final FilterQuality filterQuality;
-  final VideoBuilder videoBuilder;
+  final VideoBuilder? videoBuilder;
   @override
   _RTCVideoViewState createState() => _RTCVideoViewState();
 }
@@ -33,7 +30,7 @@ class _RTCVideoViewState extends State<RTCVideoView> {
   @override
   void initState() {
     super.initState();
-    widget._renderer?.delegate?.addListener(() {
+    widget._renderer.delegate.addListener(() {
       if (mounted) setState(() {});
     });
   }
@@ -60,7 +57,7 @@ class _RTCVideoViewState extends State<RTCVideoView> {
           : Container();
 
       if (widget.videoBuilder != null) {
-        child = widget.videoBuilder(Size(width, height), child);
+        child = widget.videoBuilder!(Size(width, height), child);
       }
 
       return Center(
@@ -73,4 +70,4 @@ class _RTCVideoViewState extends State<RTCVideoView> {
   }
 }
 
-typedef VideoBuilder = Widget Function(Size size, Widget child);
+typedef VideoBuilder = Widget Function(Size size, Widget? child);

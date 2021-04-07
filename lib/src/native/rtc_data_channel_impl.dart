@@ -25,12 +25,12 @@ class RTCDataChannelNative extends RTCDataChannel {
   final String _peerConnectionId;
   final String _label;
   final int _dataChannelId;
-  RTCDataChannelState _state;
+  RTCDataChannelState? _state;
   final _channel = WebRTC.methodChannel();
-  StreamSubscription<dynamic> _eventSubscription;
+  StreamSubscription<dynamic>? _eventSubscription;
 
   @override
-  RTCDataChannelState get state => _state;
+  RTCDataChannelState? get state => _state;
 
   @override
   int get id => _dataChannelId;
@@ -50,9 +50,9 @@ class RTCDataChannelNative extends RTCDataChannel {
       case 'dataChannelStateChanged':
         //int dataChannelId = map['id'];
         _state = rtcDataChannelStateForString(map['state']);
-        onDataChannelState?.call(_state);
+        onDataChannelState?.call(_state!);
 
-        _stateChangeController.add(_state);
+        _stateChangeController.add(_state!);
         break;
       case 'dataChannelReceiveMessage':
         //int dataChannelId = map['id'];
@@ -79,8 +79,9 @@ class RTCDataChannelNative extends RTCDataChannel {
   }
 
   void errorListener(Object obj) {
-    final PlatformException e = obj;
-    throw e;
+    if (obj is Exception) {
+      throw obj;
+    }
   }
 
   @override

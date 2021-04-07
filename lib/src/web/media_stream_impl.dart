@@ -6,7 +6,9 @@ import '../interface/media_stream_track.dart';
 import 'media_stream_track_impl.dart';
 
 class MediaStreamWeb extends MediaStream {
-  MediaStreamWeb(this.jsStream, String ownerTag) : super(jsStream.id, ownerTag);
+  MediaStreamWeb(this.jsStream, String ownerTag)
+      : assert(jsStream.id != null),
+        super(jsStream.id!, ownerTag);
   final html.MediaStream jsStream;
 
   @override
@@ -53,7 +55,7 @@ class MediaStreamWeb extends MediaStream {
   @override
   Future<void> dispose() async {
     getTracks().forEach((element) {
-      element.dispose();
+      element.stop();
     });
     return super.dispose();
   }
@@ -64,7 +66,7 @@ class MediaStreamWeb extends MediaStream {
   }
 
   @override
-  bool get active => jsStream.active;
+  bool? get active => jsStream.active;
 
   @override
   MediaStream clone() {

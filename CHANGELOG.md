@@ -1,6 +1,36 @@
 # Changelog
 
 --------------------------------------------
+[0.6.3] - 2021.04.03
+
+* [Dart] Change RTCRtpSender.track to nullable.
+* [Web] Fix RTCVideoView/Renderer pauses when changing child in IndexedStack.
+
+[0.6.2] - 2021.04.02
+
+* [Dart] Use enumerateDevices instead of getSources.
+* [Android] Use flutter_background to fix screen capture example.
+
+[0.6.1] - 2021.04.02
+
+* [Darwin] Fixed getting crash when call setLocalDescription multiple time.
+* [Dart] Get more pub scores.
+
+[0.6.0] - 2021.04.01
+
+* [Sponsorship] Thanks for Stream sponsorship (#475)
+* [Android] Fixed a crash when switching cameras on Huawei devices.
+* [Windows] Correct signalingState & iceConnectionState event name on Windows. (#502)
+* [Dart] Clip behaviour. (#511)
+* [Dart] null-safety (@wer-mathurin Thanks for the hard work).
+* [Dart] Fix setMicrophoneMute (#466)
+* [Web] Fix pc.addTransceiver method, fix RTCRtpMediaType to string, fix (#437)
+* [Android] fix sdpSemantics issue (#478)
+
+[0.6.0-nullsafety.0] - 2021.03.22
+
+* [Dart] null-safety (@wer-mathurin Thanks for the hard work).
+
 [0.5.8] - 2021.01.26
 
 * [Web] Support selecting audio output.
