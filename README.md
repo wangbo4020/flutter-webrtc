@@ -1,31 +1,31 @@
 # Flutter-WebRTC
 
-[![Financial Contributors on Open Collective](https://opencollective.com/flutter-webrtc/all/badge.svg?label=financial+contributors)](https://opencollective.com/flutter-webrtc) [![pub package](https://img.shields.io/pub/v/flutter_webrtc.svg)](https://pub.dartlang.org/packages/flutter_webrtc) [![Gitter](https://badges.gitter.im/flutter-webrtc/Lobby.svg)](https://gitter.im/flutter-webrtc/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Financial Contributors on Open Collective](https://opencollective.com/flutter-webrtc/all/badge.svg?label=financial+contributors)](https://opencollective.com/flutter-webrtc) [![pub package](https://img.shields.io/pub/v/flutter_webrtc.svg)](https://pub.dartlang.org/packages/flutter_webrtc) [![Gitter](https://badges.gitter.im/flutter-webrtc/Lobby.svg)](https://gitter.im/flutter-webrtc/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![slack](https://img.shields.io/badge/join-us%20on%20slack-gray.svg?longCache=true&logo=slack&colorB=brightgreen)](https://join.slack.com/t/flutterwebrtc/shared_invite/zt-q83o7y1s-FExGLWEvtkPKM8ku_F8cEQ)
 
 WebRTC plugin for Flutter Mobile/Desktop/Web
 
 </br>
 <p align="center">
 <strong>Sponsored with 💖 &nbsp by</strong><br />
-<a href="https://getstream.io/?utm_source=github.com/flutter-webrtc/flutter-webrtc&utm_medium=github&utm_campaign=oss_sponsorship" target="_blank">
+<a href="https://getstream.io/chat/flutter/tutorial/?utm_source=https://github.com/flutter-webrtc/flutter-webrtc&utm_medium=github&utm_content=developer&utm_term=flutter" target="_blank">
 <img src="https://stream-blog-v2.imgix.net/blog/wp-content/uploads/f7401112f41742c4e173c30d4f318cb8/stream_logo_white.png?w=350" alt="Stream Chat" style="margin: 8px" />
 </a>
 <br />
-Enterprise Grade APIs for Feeds & Chat. <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=github.com/flutter-webrtc/flutter-webrtc&utm_medium=github&utm_campaign=oss_sponsorship" target="_blank">Try the Flutter Chat tutorial</a> 💬
+Enterprise Grade APIs for Feeds & Chat. <a href="https://getstream.io/chat/flutter/tutorial/?utm_source=https://github.com/flutter-webrtc/flutter-webrtc&utm_medium=github&utm_content=developer&utm_term=flutter" target="_blank">Try the Flutter Chat tutorial</a> 💬
 </p>
 
 </br>
 
 ## Functionality
 
-| Feature | Android | iOS | [Web](https://flutter.dev/web) | macOS | Windows | Linux | [Fuchsia](https://fuchsia.googlesource.com/) |
-| :-------------: | :-------------:| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-| Audio/Video | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | [WIP] | |
-| Data Channel | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | [WIP] | |
-| Screen Capture | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | | | | |
-| Unified-Plan | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | | | |
-| Simulcast | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | | | |
-| MediaRecorder| :warning: | :warning: | :heavy_check_mark: | | | | |
+| Feature | Android | iOS | [Web](https://flutter.dev/web) | macOS | Windows | Linux | [Fuchsia](https://fuchsia.dev/) | [Embedded](https://github.com/sony/flutter-embedded-linux) |
+| :-------------: | :-------------:| :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+| Audio/Video | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | [WIP] | | |
+| Data Channel | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | [WIP] | | |
+| Screen Capture | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | | | | | |
+| Unified-Plan | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | [WIP] | | | |
+| Simulcast | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | [WIP] | | | |
+| MediaRecorder| :warning: | :warning: | :heavy_check_mark: | | | | | |
 
 ## Usage
 
@@ -94,6 +94,7 @@ The project is inseparable from the contributors of the community.
 - [亢少军](https://github.com/kangshaojun) - Sponsor
 - [ION](https://github.com/pion/ion) - Sponsor
 - [reSipWebRTC](https://github.com/reSipWebRTC) - Sponsor
+- [沃德米科技](https://github.com/woodemi)-[36记手写板](https://www.36notes.com) - Sponsor
 
 ### Example
 

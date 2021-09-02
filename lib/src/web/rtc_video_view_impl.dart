@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../interface/enums.dart';
@@ -25,35 +28,60 @@ class RTCVideoView extends StatefulWidget {
 
 class _RTCVideoViewState extends State<RTCVideoView> {
   _RTCVideoViewState();
+
   RTCVideoRendererWeb get videoRenderer =>
       widget._renderer.delegate as RTCVideoRendererWeb;
+
   @override
   void initState() {
     super.initState();
-    widget._renderer.delegate.addListener(() {
-      if (mounted) setState(() {});
-    });
-  }
-
-  Widget buildVideoElementView(RTCVideoViewObjectFit objFit, bool mirror) {
-    videoRenderer.mirror = mirror;
+    widget._renderer.delegate.addListener(_onRendererListener);
+    videoRenderer.mirror = widget.mirror;
     videoRenderer.objectFit =
-        objFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
+        widget.objectFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
             ? 'contain'
             : 'cover';
-    return HtmlElementView(
-        viewType: 'RTCVideoRenderer-${videoRenderer.textureId}');
+  }
+
+  void _onRendererListener() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget._renderer.delegate.removeListener(_onRendererListener);
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(RTCVideoView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    Timer(
+        Duration(milliseconds: 10), () => videoRenderer.mirror = widget.mirror);
+    videoRenderer.objectFit =
+        widget.objectFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
+            ? 'contain'
+            : 'cover';
+  }
+
+  Widget buildVideoElementView() {
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.rotationY(videoRenderer.mirror ? pi * -1 : 0),
+      child: HtmlElementView(
+          viewType: 'RTCVideoRenderer-${videoRenderer.textureId}'),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      final width = constraints.maxWidth;
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final width = constraints.maxWidth;
       final height = constraints.maxHeight;
 
       Widget child = widget._renderer.renderVideo
-          ? buildVideoElementView(widget.objectFit, widget.mirror)
+          ? buildVideoElementView()
           : Container();
 
       if (widget.videoBuilder != null) {
