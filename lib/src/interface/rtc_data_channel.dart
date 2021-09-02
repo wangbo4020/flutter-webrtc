@@ -73,7 +73,6 @@ abstract class RTCDataChannel {
   RTCDataChannelOnMessageCallback? onMessage;
 
   int get id;
-  String get label;
 
   /// Get current state.
   RTCDataChannelState? get state;

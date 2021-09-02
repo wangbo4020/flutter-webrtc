@@ -37,9 +37,6 @@ class RTCDataChannelWeb extends RTCDataChannel {
   @override
   RTCDataChannelState get state => _state;
 
-  @override
-  String? get label => _jsDc.label;
-
   final _stateChangeController =
       StreamController<RTCDataChannelState>.broadcast(sync: true);
   final _messageController =
