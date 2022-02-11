@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import '../interface/media_stream.dart';
-import '../interface/media_stream_track.dart';
+import 'package:webrtc_interface/webrtc_interface.dart';
+
 import 'media_stream_track_impl.dart';
 import 'utils.dart';
 
@@ -14,28 +14,22 @@ class MediaStreamNative extends MediaStream {
       ..setMediaTracks(map['audioTracks'], map['videoTracks']);
   }
 
-  final _channel = WebRTC.methodChannel();
-
   final _audioTracks = <MediaStreamTrack>[];
   final _videoTracks = <MediaStreamTrack>[];
 
   void setMediaTracks(List<dynamic> audioTracks, List<dynamic> videoTracks) {
     _audioTracks.clear();
 
-    if (audioTracks != null) {
-      audioTracks.forEach((track) {
-        _audioTracks.add(MediaStreamTrackNative(
-            track['id'], track['label'], track['kind'], track['enabled']));
-      });
-    }
+    audioTracks.forEach((track) {
+      _audioTracks.add(MediaStreamTrackNative(
+          track['id'], track['label'], track['kind'], track['enabled']));
+    });
 
     _videoTracks.clear();
-    if (videoTracks != null) {
-      videoTracks.forEach((track) {
-        _videoTracks.add(MediaStreamTrackNative(
-            track['id'], track['label'], track['kind'], track['enabled']));
-      });
-    }
+    videoTracks.forEach((track) {
+      _videoTracks.add(MediaStreamTrackNative(
+          track['id'], track['label'], track['kind'], track['enabled']));
+    });
   }
 
   @override
@@ -63,7 +57,7 @@ class MediaStreamNative extends MediaStream {
     }
 
     if (addToNative) {
-      await _channel.invokeMethod('mediaStreamAddTrack',
+      await WebRTC.invokeMethod('mediaStreamAddTrack',
           <String, dynamic>{'streamId': id, 'trackId': track.id});
     }
   }
@@ -78,7 +72,7 @@ class MediaStreamNative extends MediaStream {
     }
 
     if (removeFromNative) {
-      await _channel.invokeMethod('mediaStreamRemoveTrack',
+      await WebRTC.invokeMethod('mediaStreamRemoveTrack',
           <String, dynamic>{'streamId': id, 'trackId': track.id});
     }
   }
@@ -95,7 +89,7 @@ class MediaStreamNative extends MediaStream {
 
   @override
   Future<Null> dispose() async {
-    await _channel.invokeMethod(
+    await WebRTC.invokeMethod(
       'streamDispose',
       <String, dynamic>{'streamId': id},
     );

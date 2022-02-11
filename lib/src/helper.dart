@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-import 'interface/media_stream.dart';
-import 'interface/mediadevices.dart';
+import 'package:webrtc_interface/webrtc_interface.dart';
+
+import '../flutter_webrtc.dart';
 
 class Helper {
   static Future<List<MediaDeviceInfo>> enumerateDevices(String type) async {
@@ -50,7 +50,7 @@ class Helper {
     }
 
     if (!kIsWeb) {
-      return WebRTC.methodChannel().invokeMethod<bool>(
+      return WebRTC.invokeMethod(
         'mediaStreamTrackSwitchCamera',
         <String, dynamic>{'trackId': track.id},
       ).then((value) => value ?? false);
@@ -91,8 +91,7 @@ class Helper {
         constraints['volume'] = volume;
         await track.applyConstraints(constraints);
       } else {
-        var _channel = WebRTC.methodChannel();
-        await _channel.invokeMethod(
+        await WebRTC.invokeMethod(
           'setVolume',
           <String, dynamic>{'trackId': track.id, 'volume': volume},
         );
@@ -109,7 +108,7 @@ class Helper {
 
     if (!kIsWeb) {
       try {
-        await WebRTC.methodChannel().invokeMethod(
+        await WebRTC.invokeMethod(
           'setMicrophoneMute',
           <String, dynamic>{'trackId': track.id, 'mute': mute},
         );

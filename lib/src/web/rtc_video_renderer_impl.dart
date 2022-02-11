@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:js_util' as jsutil;
+import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../interface/media_stream.dart';
-import '../interface/rtc_video_renderer.dart';
-import 'media_stream_impl.dart';
-import 'ui_fake.dart' if (dart.library.html) 'dart:ui' as ui;
+import 'package:dart_webrtc/dart_webrtc.dart';
+import 'package:dart_webrtc/src/media_stream_impl.dart';
+import 'package:webrtc_interface/webrtc_interface.dart';
 
 // An error code value to error name Map.
 // See: https://developer.mozilla.org/en-US/docs/Web/API/MediaError/code
@@ -32,8 +33,11 @@ const Map<int, String> _kErrorValueToErrorDescription = {
 const String _kDefaultErrorMessage =
     'No further diagnostic information can be determined or provided.';
 
-class RTCVideoRendererWeb extends VideoRenderer {
-  RTCVideoRendererWeb() : _textureId = _textureCounter++;
+class RTCVideoRenderer extends ValueNotifier<RTCVideoValue>
+    implements VideoRenderer {
+  RTCVideoRenderer()
+      : _textureId = _textureCounter++,
+        super(RTCVideoValue.empty);
 
   static const _elementIdForAudioManager = 'html_webrtc_audio_manager_list';
 
@@ -154,23 +158,12 @@ class RTCVideoRendererWeb extends VideoRenderer {
   }
 
   html.VideoElement? findHtmlView() {
-    final video = html.document.getElementById(_elementIdForVideo);
-    if (null != video) return video as html.VideoElement;
-
-    final fltPv = html.document.getElementsByTagName('flt-platform-view');
-    if (fltPv.isEmpty) return null;
-    final child = (fltPv.first as html.Element).shadowRoot!.childNodes;
-    for (final item in child) {
-      if ((item as html.Element).id == _elementIdForVideo) {
-        return item as html.VideoElement;
-      }
-    }
-    return null;
+    final element = html.document.getElementById(_elementIdForVideo);
+    if (null != element) return element as html.VideoElement;
   }
 
   @override
   Future<void> dispose() async {
-    await _srcObject?.dispose();
     _srcObject = null;
     _subscriptions.forEach((s) => s.cancel());
     final element = findHtmlView();
@@ -179,15 +172,16 @@ class RTCVideoRendererWeb extends VideoRenderer {
     _audioElement?.remove();
     final audioManager = html.document.getElementById(_elementIdForAudioManager)
         as html.DivElement?;
-    if (audioManager != null && !audioManager.hasChildNodes())
+    if (audioManager != null && !audioManager.hasChildNodes()) {
       audioManager.remove();
+    }
     return super.dispose();
   }
 
   @override
   Future<bool> audioOutput(String deviceId) async {
     try {
-      final element = findHtmlView();
+      final element = _audioElement;
       if (null != element && jsutil.hasProperty(element, 'setSinkId')) {
         await jsutil.promiseToFuture<void>(
             jsutil.callMethod(element, 'setSinkId', [deviceId]));
@@ -202,7 +196,7 @@ class RTCVideoRendererWeb extends VideoRenderer {
 
   @override
   Future<void> initialize() async {
-    // // ignore: undefined_prefixed_name
+    // ignore: undefined_prefixed_name
     ui.platformViewRegistry.registerViewFactory('RTCVideoRenderer-$textureId',
         (int viewId) {
       _subscriptions.forEach((s) => s.cancel());
@@ -261,4 +255,7 @@ class RTCVideoRendererWeb extends VideoRenderer {
       return element;
     });
   }
+
+  @override
+  Function? onResize;
 }

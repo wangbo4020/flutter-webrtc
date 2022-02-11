@@ -1,15 +1,16 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-import '../interface/media_stream.dart';
-import '../interface/rtc_video_renderer.dart';
+import 'package:webrtc_interface/webrtc_interface.dart';
+
+import '../helper.dart';
 import 'utils.dart';
 
-class RTCVideoRendererNative extends VideoRenderer {
-  RTCVideoRendererNative();
-  final _channel = WebRTC.methodChannel();
+class RTCVideoRenderer extends ValueNotifier<RTCVideoValue>
+    implements VideoRenderer {
+  RTCVideoRenderer() : super(RTCVideoValue.empty);
   int? _textureId;
   MediaStream? _srcObject;
   StreamSubscription<dynamic>? _eventSubscription;
@@ -36,11 +37,14 @@ class RTCVideoRendererNative extends VideoRenderer {
   MediaStream? get srcObject => _srcObject;
 
   @override
+  Function? onResize;
+
+  @override
   set srcObject(MediaStream? stream) {
     if (textureId == null) throw 'Call initialize before setting the stream';
 
     _srcObject = stream;
-    _channel.invokeMethod('videoRendererSetSrcObject', <String, dynamic>{
+    WebRTC.invokeMethod('videoRendererSetSrcObject', <String, dynamic>{
       'textureId': textureId,
       'streamId': stream?.id ?? '',
       'ownerTag': stream?.ownerTag ?? ''
@@ -54,7 +58,7 @@ class RTCVideoRendererNative extends VideoRenderer {
   @override
   Future<void> dispose() async {
     await _eventSubscription?.cancel();
-    await _channel.invokeMethod(
+    await WebRTC.invokeMethod(
       'videoRendererDispose',
       <String, dynamic>{'textureId': _textureId},
     );
@@ -78,6 +82,7 @@ class RTCVideoRendererNative extends VideoRenderer {
         onResize?.call();
         break;
       case 'didFirstFrameRendered':
+        value = value.copyWith(renderVideo: renderVideo);
         break;
     }
   }

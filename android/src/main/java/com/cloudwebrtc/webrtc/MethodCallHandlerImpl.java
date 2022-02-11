@@ -18,6 +18,7 @@ import com.cloudwebrtc.webrtc.utils.ConstraintsArray;
 import com.cloudwebrtc.webrtc.utils.ConstraintsMap;
 import com.cloudwebrtc.webrtc.utils.EglUtils;
 import com.cloudwebrtc.webrtc.utils.ObjectType;
+import com.cloudwebrtc.webrtc.SimulcastVideoEncoderFactoryWrapper;
 
 import org.webrtc.AudioTrack;
 import org.webrtc.CryptoOptions;
@@ -155,7 +156,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
     mFactory = PeerConnectionFactory.builder()
             .setOptions(new Options())
-            .setVideoEncoderFactory(new DefaultVideoEncoderFactory(eglContext, false, true))
+            .setVideoEncoderFactory(new SimulcastVideoEncoderFactoryWrapper(eglContext, true, false))
             .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglContext))
             .setAudioDeviceModule(audioDeviceModule)
             .createPeerConnectionFactory();
@@ -371,6 +372,12 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       case "trackDispose": {
         String trackId = call.argument("trackId");
         localTracks.remove(trackId);
+        result.success(null);
+        break;
+      }
+      case "restartIce": {
+        String peerConnectionId = call.argument("peerConnectionId");
+        restartIce(peerConnectionId);
         result.success(null);
         break;
       }
@@ -600,6 +607,12 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         String direction = call.argument("direction");
         String transceiverId = call.argument("transceiverId");
         rtpTransceiverSetDirection(peerConnectionId, direction, transceiverId, result);
+        break;
+      }
+      case "rtpTransceiverGetDirection": {
+        String peerConnectionId = call.argument("peerConnectionId");
+        String transceiverId = call.argument("transceiverId");
+        rtpTransceiverGetDirection(peerConnectionId, transceiverId, result);
         break;
       }
       case "rtpTransceiverGetCurrentDirection": {
@@ -999,6 +1012,12 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     return activity;
   }
 
+  @Nullable
+  @Override
+  public Context getApplicationContext() {
+    return context;
+  }
+
   MediaStream getStreamForId(String id, String peerConnectionId) {
     MediaStream stream = null;
     if (peerConnectionId.length() > 0) {
@@ -1133,7 +1152,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
   }
 
   public void mediaStreamTrackSetEnabled(final String id, final boolean enabled) {
-    MediaStreamTrack track = localTracks.get(id);
+    MediaStreamTrack track = getTrackForId(id);
 
     if (track == null) {
       Log.d(TAG, "mediaStreamTrackSetEnabled() track is null");
@@ -1445,6 +1464,15 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     }
   }
 
+  public void restartIce(final String id) {
+    PeerConnectionObserver pco = mPeerConnectionObservers.get(id);
+    if (pco == null || pco.getPeerConnection() == null) {
+      Log.d(TAG, "restartIce() peerConnection is null");
+    } else {
+      pco.restartIce();
+    }
+  }
+
   public void peerConnectionClose(final String id) {
     PeerConnectionObserver pco = mPeerConnectionObservers.get(id);
     if (pco == null || pco.getPeerConnection() == null) {
@@ -1579,6 +1607,15 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       resultError("rtpTransceiverSetDirection", "peerConnection is null", result);
     } else {
       pco.rtpTransceiverSetDirection(direction, transceiverId, result);
+    }
+  }
+
+  public void rtpTransceiverGetDirection(String peerConnectionId, String transceiverId, Result result) {
+    PeerConnectionObserver pco = mPeerConnectionObservers.get(peerConnectionId);
+    if (pco == null || pco.getPeerConnection() == null) {
+      resultError("rtpTransceiverSetDirection", "peerConnection is null", result);
+    } else {
+      pco.rtpTransceiverGetDirection(transceiverId, result);
     }
   }
 

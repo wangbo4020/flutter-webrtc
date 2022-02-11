@@ -1,11 +1,7 @@
 import 'dart:async';
 
-import '../interface/factory.dart';
-import '../interface/media_recorder.dart';
-import '../interface/media_stream.dart';
-import '../interface/navigator.dart';
-import '../interface/rtc_peerconnection.dart';
-import '../interface/rtc_video_renderer.dart';
+import 'package:webrtc_interface/webrtc_interface.dart';
+
 import 'media_recorder_impl.dart';
 import 'media_stream_impl.dart';
 import 'navigator_impl.dart';
@@ -20,15 +16,10 @@ class RTCFactoryNative extends RTCFactory {
 
   @override
   Future<MediaStream> createLocalMediaStream(String label) async {
-    var _channel = WebRTC.methodChannel();
-
-    final response = await _channel
-        .invokeMethod<Map<dynamic, dynamic>>('createLocalMediaStream');
-
+    final response = await WebRTC.invokeMethod('createLocalMediaStream');
     if (response == null) {
       throw Exception('createLocalMediaStream return null, something wrong');
     }
-
     return MediaStreamNative(response['streamId'], label);
   }
 
@@ -62,9 +53,26 @@ class RTCFactoryNative extends RTCFactory {
 
   @override
   VideoRenderer videoRenderer() {
-    return RTCVideoRendererNative();
+    return RTCVideoRenderer();
   }
 
   @override
   Navigator get navigator => NavigatorNative();
 }
+
+Future<RTCPeerConnection> createPeerConnection(
+    Map<String, dynamic> configuration,
+    [Map<String, dynamic> constraints = const {}]) async {
+  return RTCFactoryNative.instance
+      .createPeerConnection(configuration, constraints);
+}
+
+Future<MediaStream> createLocalMediaStream(String label) async {
+  return RTCFactoryNative.instance.createLocalMediaStream(label);
+}
+
+MediaRecorder mediaRecorder() {
+  return RTCFactoryNative.instance.mediaRecorder();
+}
+
+Navigator get navigator => RTCFactoryNative.instance.navigator;

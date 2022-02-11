@@ -80,6 +80,10 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
     this.peerConnection = peerConnection;
   }
 
+  void restartIce() {
+    peerConnection.restartIce();
+  }
+
   void close() {
     peerConnection.close();
     remoteStreams.clear();
@@ -123,7 +127,7 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
         registerDataChannelObserver(dataChannelId, dataChannel);
 
         ConstraintsMap params = new ConstraintsMap();
-        params.putInt("id", dataChannel.id());
+        params.putInt("id", dataChannelId);
         params.putString("label", dataChannel.label());
         result.success(params.toMap());
     } else {
@@ -265,7 +269,12 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
     sendEvent(params);
   }
 
-  @Override
+    @Override
+    public void onStandardizedIceConnectionChange(PeerConnection.IceConnectionState newState) {
+
+    }
+
+    @Override
   public void onIceConnectionReceivingChange(boolean var1) {
   }
 
@@ -447,7 +456,27 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
       sendEvent(params);
   }
 
-  @Override
+    @Override
+    public void onRemoveTrack(RtpReceiver rtpReceiver) {
+        Log.d(TAG, "onRemoveTrack");
+
+        MediaStreamTrack track = rtpReceiver.track();
+        String trackId = track.id();
+        ConstraintsMap trackInfo = new ConstraintsMap();
+        trackInfo.putString("id", trackId);
+        trackInfo.putString("label", track.kind());
+        trackInfo.putString("kind", track.kind());
+        trackInfo.putBoolean("enabled", track.enabled());
+        trackInfo.putString("readyState", track.state().toString());
+        trackInfo.putBoolean("remote", true);
+        ConstraintsMap params = new ConstraintsMap();
+        params.putString("event", "onRemoveTrack");
+        params.putString("trackId", track.id());
+        params.putMap("track", trackInfo.toMap());
+        sendEvent(params);
+    }
+
+    @Override
   public void onDataChannel(DataChannel dataChannel) {
     // XXX Unfortunately, the Java WebRTC API doesn't expose the id
     // of the underlying C++/native DataChannel (even though the
@@ -686,34 +715,52 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
       return  init;
   }
 
-  private RtpParameters updateRtpParameters(Map<String, Object> newParameters, RtpParameters parameters){
-    List<Map<String, Object>> encodings = (List<Map<String, Object>>) newParameters.get("encodings");
-    final Iterator encodingsIterator = encodings.iterator();
-    final Iterator nativeEncodingsIterator = parameters.encodings.iterator();
-    while(encodingsIterator.hasNext() && nativeEncodingsIterator.hasNext()){
-      final RtpParameters.Encoding nativeEncoding = (RtpParameters.Encoding) nativeEncodingsIterator.next();
-      final Map<String, Object> encoding = (Map<String, Object>) encodingsIterator.next();
-      if(encoding.containsKey("active")){
-        nativeEncoding.active =  (Boolean) encoding.get("active");
-      }
-      if (encoding.containsKey("maxBitrate")) {
-        nativeEncoding.maxBitrateBps = (Integer) encoding.get("maxBitrate");
-      }
-      if (encoding.containsKey("minBitrate")) {
-        nativeEncoding.minBitrateBps = (Integer) encoding.get("minBitrate");
-      }
-      if (encoding.containsKey("maxFramerate")) {
-        nativeEncoding.maxFramerate = (Integer) encoding.get("maxFramerate");
-      }
-      if (encoding.containsKey("numTemporalLayers")) {
-        nativeEncoding.numTemporalLayers = (Integer) encoding.get("numTemporalLayers");
-      }
-      if (encoding.containsKey("scaleResolutionDownBy") ) {
-        nativeEncoding.scaleResolutionDownBy = (Double) encoding.get("scaleResolutionDownBy");
-      }
+private RtpParameters updateRtpParameters(RtpParameters parameters, Map<String, Object> newParameters) {
+    // new
+    final List<Map<String, Object>> encodings = (List<Map<String, Object>>)newParameters.get("encodings");
+    // current
+    final List<RtpParameters.Encoding> nativeEncodings = parameters.encodings;
+
+    for (Map<String, Object> encoding: encodings) {
+        RtpParameters.Encoding currentParams = null;
+        String rid = (String)encoding.get("rid");
+
+        // find by rid
+        if (rid != null) {
+            for (RtpParameters.Encoding x : nativeEncodings) {
+                if (rid.equals(x.rid)) {
+                    currentParams = x;
+                    break;
+                }
+            }
+        }
+
+        // fall back to index
+        if (currentParams == null) {
+            int idx = encodings.indexOf(encoding);
+            if (idx < nativeEncodings.size()) {
+                currentParams = nativeEncodings.get(idx);
+            }
+        }
+
+        if (currentParams != null) {
+          Boolean active = (Boolean)encoding.get("active");
+          if (active != null) currentParams.active = active;
+          Integer maxBitrate = (Integer)encoding.get("maxBitrate");
+          if (maxBitrate != null) currentParams.maxBitrateBps = maxBitrate;
+          Integer minBitrate = (Integer)encoding.get("minBitrate");
+          if (minBitrate != null) currentParams.minBitrateBps = minBitrate;
+          Integer maxFramerate = (Integer)encoding.get("maxFramerate");
+          if (maxFramerate != null) currentParams.maxFramerate = maxFramerate; 
+          Integer numTemporalLayers = (Integer)encoding.get("numTemporalLayers");
+          if (numTemporalLayers != null) currentParams.numTemporalLayers = numTemporalLayers;
+          Double scaleResolutionDownBy = (Double)encoding.get("scaleResolutionDownBy");
+          if (scaleResolutionDownBy != null) currentParams.scaleResolutionDownBy = scaleResolutionDownBy;  
+        }
     }
+
     return parameters;
-  }
+}
 
   private Map<String, Object> rtpParametersToMap(RtpParameters rtpParameters){
       ConstraintsMap info = new ConstraintsMap();
@@ -738,6 +785,9 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
       for(RtpParameters.Encoding encoding : rtpParameters.encodings){
           ConstraintsMap map = new ConstraintsMap();
           map.putBoolean("active",encoding.active);
+          if (encoding.rid != null) {
+              map.putString("rid", encoding.rid);
+          }
           if (encoding.maxBitrateBps != null) {
               map.putInt("maxBitrate", encoding.maxBitrateBps);
           }
@@ -933,15 +983,31 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
       result.success(null);
   }
 
+  public void rtpTransceiverGetDirection(String transceiverId, Result result) {
+      RtpTransceiver transceiver = getRtpTransceiverById(transceiverId);
+      if (transceiver == null) {
+          resultError("rtpTransceiverGetDirection", "transceiver is null", result);
+          return;
+      }
+      ConstraintsMap params = new ConstraintsMap();
+      params.putString("result", transceiverDirectionString(transceiver.getDirection()));
+      result.success(params.toMap());
+  }
+
   public void rtpTransceiverGetCurrentDirection(String transceiverId, Result result) {
       RtpTransceiver transceiver = getRtpTransceiverById(transceiverId);
       if (transceiver == null) {
           resultError("rtpTransceiverGetCurrentDirection", "transceiver is null", result);
           return;
       }
-      ConstraintsMap params = new ConstraintsMap();
-      params.putString("result", transceiverDirectionString(transceiver.getDirection()));
-      result.success(params.toMap());
+      RtpTransceiver.RtpTransceiverDirection direction = transceiver.getCurrentDirection();
+      if(direction == null) {
+          result.success(null);
+      } else {
+          ConstraintsMap params = new ConstraintsMap();
+          params.putString("result", transceiverDirectionString(direction));
+          result.success(params.toMap());
+      }
   }
 
     public void rtpTransceiverStop(String transceiverId, Result result) {
@@ -960,7 +1026,7 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
             resultError("rtpSenderSetParameters", "sender is null", result);
             return;
         }
-        final RtpParameters updatedParameters = updateRtpParameters(parameters, sender.getParameters());
+        final RtpParameters updatedParameters = updateRtpParameters(sender.getParameters(), parameters);
         final Boolean success = sender.setParameters(updatedParameters);
         ConstraintsMap params = new ConstraintsMap();
         params.putBoolean("result", success);

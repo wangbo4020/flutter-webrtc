@@ -1,6 +1,83 @@
 # Changelog
 
 --------------------------------------------
+[0.8.2] - 2022-02-08
+
+* [Android/iOS/macOS/Web] Add restartIce.
+
+[0.8.1] - 2021-12-29
+
+* [Android/iOS] Bump webrtc-sdk version to 93.4577.01.
+
+[0.8.0] - 2021-12-05
+
+* [Dart] Refactor: Use webrtc interface. (#777)
+* [iOS] Fix crashes for FlutterRPScreenRecorder stop.
+* [Web] Don't stop tracks when disposing MediaStream (#760)
+* [Windows] Add the necessary parameters for onRemoveTrack (#763)
+* [Example] Properly start foreground service in example (#764)
+* [Android] Fix crash for Android, close #757 and #734.
+* [Dart] Fix typo in deprecated annotations.
+* [iOS] Fix IOS captureFrame and add support for remote stream captureFrame (#778)
+* [Windows] Fix parsing stun configuration (#789)
+* [Windows] Fix mute (#792)
+* [iOS/Android/Windows] New video constraints syntax (#790)
+
+[0.7.1] - 2021-11-04
+
+* [iOS/macOS] Update framework.
+* [Android] Update framework.
+* [Windows] Implement mediaStreamTrackSetEnable (#756).
+* [iOS/macOS] Enable audio capture when acquiring track.
+* [Android] Call stopCaptureWithCompletionHandler instead (#748)
+* [Windows] Fix bug for windows.
+
+[0.7.0+hotfix.2] - 2021-10-21
+
+* [iOS/macOS] Update .podspec for Darwin.
+
+[0.7.0+hotfix.1] - 2021-10-21
+
+* [Android] Fix bug for createDataChannel.
+
+[0.7.0] - 2021-10-20
+
+* [Android] Enable Android simulcast (#731)
+* [macOS] Use pre-compiled WebRTC for macOS. (#717)
+* [iOS/macOS] Fix the correct return value of createDataChannel under darwin.
+* [Windows] Fix using the wrong id to listen datachannel events.
+* [Dart] Fix(mediaStreamTrackSetEnable): remote track is unavaiable (#723).
+
+[0.6.10+hotfix.1] - 2021-10-01
+
+* [Web] Fix compiler errors for web.
+
+[0.6.10] - 2021-10-01
+
+* [iOS] Fix bug for RtpTransceiver.getCurrentDirection.
+* [Dart] Improve MethodChannel calling.
+
+[0.6.9] - 2021-10-01
+
+* [iOS] Update WebRTC build (#707).
+* [Windows] Add Unified-Plan support for windows. (#688)
+* [iOS] Improve audio handling on iOS (#705)
+
+[0.6.8] - 2021-09-27
+
+* [Android] Use ApplicationContext to verify permissions when activity is null.
+* [iOS] Add support for lightning microphone. (#693)
+* [Windows] Fix FlutterMediaStream::GetSources.
+* [Web] Fix Flutter 2.5.0 RTCVideoRendererWeb bug (#681)
+* [Web] Bug fix (#679)
+
+[0.6.7] - 2021-09-08
+
+* [Android] upgrade webrtc sdk to m92.92.4515.
+* [Web] `addTransceiver` bug fix (#675)
+* [Web] Use low-level jsutil to call createOffer/createrAnswer to solve the issue on safari/firefox.
+* [Dart] Fix currentDirection/direction implementation confusion.
+
 [0.6.6] - 2021.09.01
 
 * [Sponsorship] Thanks for LiveKit sponsorship.
