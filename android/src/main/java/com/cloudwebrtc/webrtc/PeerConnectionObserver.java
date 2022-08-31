@@ -1,7 +1,6 @@
 package com.cloudwebrtc.webrtc;
 
 import android.util.Log;
-import android.util.SparseArray;
 import androidx.annotation.Nullable;
 import com.cloudwebrtc.webrtc.utils.AnyThreadSink;
 import com.cloudwebrtc.webrtc.utils.ConstraintsArray;
@@ -53,7 +52,7 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
     this.messenger = messenger;
     this.id = id;
 
-    eventChannel = new EventChannel(messenger, "FlutterWebRTC/peerConnectoinEvent" + id);
+    eventChannel = new EventChannel(messenger, "FlutterWebRTC/peerConnectionEvent" + id);
     eventChannel.setStreamHandler(this);
   }
 

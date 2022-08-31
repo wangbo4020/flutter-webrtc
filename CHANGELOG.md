@@ -1,6 +1,53 @@
 # Changelog
 
 --------------------------------------------
+
+[0.9.5] - 2022-08-30
+
+* [Android] fix: Fix crash when using multiple renderers.
+* [Android] fix bug with track dispose cannot close video
+* [Andorid/iOS/macOS/Windows] Fix bug of missing events in data-channel.
+
+[0.9.4] - 2022-08-22
+
+* [Andorid/iOS/macOS/Windows] New audio input/output selection API, ondevicechange event is used to monitor audio device changes.
+
+[0.9.3] - 2022-08-15
+
+* [Windows/macOS] Fix UI freeze when getting thumbnails.
+
+[0.9.2] - 2022-08-09
+
+* [Android] update libwebrtc to com.github.webrtc-sdk:android:104.5112.01.
+* [iOS/macOS] update WebRTC-SDK to 104.5112.02.
+* [Windows] update libwebrtc.dll to 104.5112.02.
+
+[0.9.1] - 2022-08-01
+
+* [iOS] fix : iOS app could not change camera resolutions cause by wrong datatype in the video Contraints.
+* [Darwin] bump version for .podspec.
+
+[0.9.0] - 2022-07-27
+
+* [macOS] Added screen-sharing support for macOS
+* [Windows] Added screen-sharing support for Windows
+* [iOS/macOS] fix: Fix compile warning for Darwin
+* [Darwin/Android/Windows] fix: Fix typo peerConnectoinEvent -> peerConnectionEvent for EventChannel name (#1019)
+
+[0.8.12] - 2022-07-15
+
+* [Darwin]: fix: camera release.
+
+[0.8.11] - 2022-07-11
+
+* [Windows] Fix variant exception of findLongInt. (#990)
+* [Windows] fix unable to get username/credential when parsing iceServers containing urls
+* [iOS] Fix RTCAudioSession properties set with libwebrtc m97, Fixes #987.
+
+[0.8.10] - 2022-06-28
+
+* [iOS] IPC Broadcast Upload Extension support for Screenshare
+
 [0.8.9] - 2022-06-08
 
 * [Android] Fixes DataChannel issue described in #974
@@ -40,7 +87,6 @@
 
 * [Android] Fix simulcast factory not sending back EncoderInfo (#891)
 * [Android] fix: correct misspell in method screenRequestPermissions (#876)
-
 
 [0.8.3] - 2022-03-01
 

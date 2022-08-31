@@ -10,6 +10,7 @@ FlutterWebRTC::FlutterWebRTC(FlutterWebRTCPlugin* plugin)
       FlutterVideoRendererManager::FlutterVideoRendererManager(this),
       FlutterMediaStream::FlutterMediaStream(this),
       FlutterPeerConnection::FlutterPeerConnection(this),
+      FlutterScreenCapture::FlutterScreenCapture(this), 
       FlutterDataChannel::FlutterDataChannel(this) {}
 
 FlutterWebRTC::~FlutterWebRTC() {}
@@ -44,9 +45,73 @@ void FlutterWebRTC::HandleMethodCall(
     const EncodableMap params =
         GetValue<EncodableMap>(*method_call.arguments());
     const EncodableMap constraints = findMap(params, "constraints");
-    result->NotImplemented();
+
+    GetDisplayMedia(constraints, std::move(result));
+  } else if (method_call.method_name().compare("getDesktopSources") == 0) {
+    // types: ["screen", "window"]
+    if (!method_call.arguments()) {
+      result->Error("Bad Arguments", "Bad arguments received");
+      return;
+    }
+    const EncodableMap params =
+        GetValue<EncodableMap>(*method_call.arguments());
+
+    const EncodableList types = findList(params, "types");
+    if (types == EncodableList()) {
+      result->Error("Bad Arguments", "Types is required");
+      return;
+    }
+    GetDesktopSources(types, std::move(result));
+  } else if (method_call.method_name().compare("updateDesktopSources") ==
+             0) {
+    // types: ["screen", "window"]
+    if (!method_call.arguments()) {
+      result->Error("Bad Arguments", "Bad arguments received");
+      return;
+    }
+    const EncodableMap params =
+        GetValue<EncodableMap>(*method_call.arguments());
+
+    const EncodableList types = findList(params, "types");
+    if (types == EncodableList()) {
+      result->Error("Bad Arguments", "Types is required");
+      return;
+    }
+    UpdateDesktopSources(types, std::move(result));
+  } else if (method_call.method_name().compare("getDesktopSourceThumbnail") ==
+             0) {
+    if (!method_call.arguments()) {
+      result->Error("Bad Arguments", "Bad arguments received");
+      return;
+    }
+    const EncodableMap params =
+        GetValue<EncodableMap>(*method_call.arguments());
+    
+    std::string sourceId = findString(params, "sourceId");
+    if (sourceId.empty()) {
+      result->Error("Bad Arguments", "Incorrect sourceId");
+      return;
+    }
+    const EncodableMap thumbnailSize = findMap(params, "thumbnailSize");
+    if (thumbnailSize != EncodableMap()) {
+      int width = 0;
+      int height = 0;
+      GetDesktopSourceThumbnail(sourceId, width, height, std::move(result));
+    } else {
+      result->Error("Bad Arguments", "Bad arguments received");
+    }
   } else if (method_call.method_name().compare("getSources") == 0) {
     GetSources(std::move(result));
+  } else if (method_call.method_name().compare("selectAudioInput") == 0) {
+    const EncodableMap params =
+        GetValue<EncodableMap>(*method_call.arguments());
+    const std::string deviceId = findString(params, "deviceId");
+    SelectAudioInput(deviceId, std::move(result));
+  }  else if (method_call.method_name().compare("selectAudioOutput") == 0) {
+    const EncodableMap params =
+        GetValue<EncodableMap>(*method_call.arguments());
+    const std::string deviceId = findString(params, "deviceId");
+    SelectAudioOutput(deviceId, std::move(result));
   } else if (method_call.method_name().compare("mediaStreamGetTracks") == 0) {
     if (!method_call.arguments()) {
       result->Error("Bad Arguments", "Null constraints arguments received");
@@ -650,10 +715,6 @@ void FlutterWebRTC::HandleMethodCall(
 
     const std::string trackId = findString(params, "trackId");
     RTCMediaTrack* track = MediaTrackForId(trackId);
-    if (nullptr == track) {
-      result->Error("rtpSenderSetTrack", "rtpSenderSetTrack() track is null");
-      return;
-    }
 
     const std::string rtpSenderId = findString(params, "rtpSenderId");
     if (0 < rtpSenderId.size()) {
@@ -682,11 +743,6 @@ void FlutterWebRTC::HandleMethodCall(
 
     const std::string trackId = findString(params, "trackId");
     RTCMediaTrack* track = MediaTrackForId(trackId);
-    if (nullptr == track) {
-      result->Error("rtpSenderReplaceTrack",
-                    "rtpSenderReplaceTrack() track is null");
-      return;
-    }
 
     const std::string rtpSenderId = findString(params, "rtpSenderId");
     if (0 < rtpSenderId.size()) {
@@ -802,11 +858,11 @@ void FlutterWebRTC::HandleMethodCall(
       return;
     }
 
-    const std::string rtpTransceiverId = findString(params, "rtpTransceiverId");
+    const std::string rtpTransceiverId = findString(params, "transceiverId");
     if (0 < rtpTransceiverId.size()) {
       if (pc == nullptr) {
         result->Error("rtpTransceiverGetCurrentDirection",
-                      "rtpTransceiverGetCurrentDirection() rtpTransceiverId is "
+                      "rtpTransceiverGetCurrentDirection() transceiverId is "
                       "null or empty");
         return;
       }
@@ -876,6 +932,8 @@ void FlutterWebRTC::HandleMethodCall(
     }
     CaptureFrame((RTCVideoTrack*)track, path, std::move(result));
 
+  } else if (method_call.method_name().compare("createLocalMediaStream") == 0) {
+    CreateLocalMediaStream(std::move(result));
   } else {
     result->NotImplemented();
   }
