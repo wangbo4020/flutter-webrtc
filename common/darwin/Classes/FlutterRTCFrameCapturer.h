@@ -5,12 +5,10 @@
 #endif
 #import <WebRTC/WebRTC.h>
 
-@interface FlutterRTCFrameCapturer : NSObject<RTCVideoRenderer>
+@interface FlutterRTCFrameCapturer : NSObject <RTCVideoRenderer>
 
-- (instancetype)initWithTrack:(RTCVideoTrack *) track toPath:(NSString *) path result:(FlutterResult)result;
-
-#if TARGET_OS_IPHONE
-+ (UIImage *)convertFrameToUIImage:(RTCVideoFrame *)frame;
-#endif
+- (instancetype)initWithTrack:(RTCVideoTrack*)track
+                       toPath:(NSString*)path
+                       result:(FlutterResult)result;
 
 @end

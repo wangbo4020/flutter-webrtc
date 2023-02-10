@@ -36,6 +36,7 @@ import android.view.WindowManager;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.cloudwebrtc.webrtc.audio.AudioSwitchManager;
 import com.cloudwebrtc.webrtc.record.AudioChannel;
 import com.cloudwebrtc.webrtc.record.AudioSamplesInterceptor;
 import com.cloudwebrtc.webrtc.record.MediaRecorderImpl;
@@ -325,6 +326,7 @@ class GetUserMediaImpl {
     }
 
     private AudioTrack getUserAudio(ConstraintsMap constraints) {
+        AudioSwitchManager.instance.start();
         MediaConstraints audioConstraints;
         if (constraints.getType("audio") == ObjectType.Boolean) {
             audioConstraints = new MediaConstraints();
@@ -460,7 +462,7 @@ class GetUserMediaImpl {
                         PeerConnectionFactory pcFactory = stateProvider.getPeerConnectionFactory();
                         VideoSource videoSource = pcFactory.createVideoSource(true);
 
-                        String threadName = Thread.currentThread().getName();
+                        String threadName = Thread.currentThread().getName() + "_texture_screen_thread";
                         SurfaceTextureHelper surfaceTextureHelper =
                                 SurfaceTextureHelper.create(threadName, EglUtils.getRootEglBaseContext());
                         videoCapturer.initialize(
@@ -680,7 +682,7 @@ class GetUserMediaImpl {
 
         PeerConnectionFactory pcFactory = stateProvider.getPeerConnectionFactory();
         VideoSource videoSource = pcFactory.createVideoSource(false);
-        String threadName = Thread.currentThread().getName();
+        String threadName = Thread.currentThread().getName() + "_texture_camera_thread";
         SurfaceTextureHelper surfaceTextureHelper =
                 SurfaceTextureHelper.create(threadName, EglUtils.getRootEglBaseContext());
         videoCapturer.initialize(

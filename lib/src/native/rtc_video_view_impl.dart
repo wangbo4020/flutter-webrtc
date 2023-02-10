@@ -8,19 +8,19 @@ import 'rtc_video_renderer_impl.dart';
 
 class RTCVideoView extends StatelessWidget {
   RTCVideoView(
-    this._renderer, {
-    Key? key,
-    this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
-    this.mirror = false,
-    this.filterQuality = FilterQuality.low,
-    this.videoBuilder,
-  }) : super(key: key);
+      this._renderer, {
+        Key? key,
+        this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
+        this.mirror = false,
+        this.filterQuality = FilterQuality.low,
+        this.placeholderBuilder,
+      }) : super(key: key);
 
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
   final bool mirror;
   final FilterQuality filterQuality;
-  final VideoBuilder? videoBuilder;
+  final WidgetBuilder? placeholderBuilder;
 
   RTCVideoRenderer get videoRenderer => _renderer;
 
@@ -28,10 +28,10 @@ class RTCVideoView extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) =>
-            _buildVideoView(constraints));
+            _buildVideoView(context, constraints));
   }
 
-  Widget _buildVideoView(BoxConstraints constraints) {
+  Widget _buildVideoView(BuildContext context, BoxConstraints constraints) {
     return Center(
       child: Container(
         width: constraints.maxWidth,
@@ -46,27 +46,21 @@ class RTCVideoView extends StatelessWidget {
               valueListenable: videoRenderer,
               builder:
                   (BuildContext context, RTCVideoValue value, Widget? child) {
-                final width = constraints.maxHeight * value.aspectRatio;
-                final height = constraints.maxHeight;
-                if (videoBuilder != null) {
-                  child = videoBuilder!(Size(width, height), child);
-                }
                 return SizedBox(
-                  width: width,
-                  height: height,
+                  width: constraints.maxHeight * value.aspectRatio,
+                  height: constraints.maxHeight,
                   child: child,
                 );
               },
               child: Transform(
                 transform: Matrix4.identity()..rotateY(mirror ? -pi : 0.0),
                 alignment: FractionalOffset.center,
-                child: videoRenderer.textureId != null &&
-                        videoRenderer.srcObject != null
+                child: videoRenderer.renderVideo
                     ? Texture(
-                        textureId: videoRenderer.textureId!,
-                        filterQuality: filterQuality,
-                      )
-                    : Container(),
+                  textureId: videoRenderer.textureId!,
+                  filterQuality: filterQuality,
+                )
+                    : placeholderBuilder?.call(context) ?? Container(),
               ),
             ),
           ),
@@ -75,5 +69,3 @@ class RTCVideoView extends StatelessWidget {
     );
   }
 }
-
-typedef VideoBuilder = Widget Function(Size size, Widget? child);

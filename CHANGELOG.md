@@ -1,6 +1,73 @@
 # Changelog
 
 --------------------------------------------
+[0.9.21] - 2023-02-10
+
+* [Web] Fix: RTCRtpParameters.fromJsObject for Firefox.
+* [Web] Add bufferedamountlow.
+* [Android] Fixed frame capturer returning images with wrong colors (#1258).
+* [Windows] bug fix.
+
+[0.9.20] - 2023-02-03
+
+* [Dawrin/Android/Windows] Add getCapabilities/setCodecPreferences methods
+* [Darwin] buffered amount
+* [Linux] Fixed audio device name buffer size
+* [Android] Start audioswitch and only activate it when needed
+* [Darwin] Fix typo which broke GcmCryptoSuites
+
+[0.9.19] - 2023-01-10
+
+* [Dart] Fix getStats: change 'track' to 'trackId' (#1199)
+* [Android] keep the audio switch after stopping (#1202)
+* [Dart] Enhance RTC video view with placeholder builder property (#1206)
+* [Android] Use forked version of audio switch to avoid BLUETOOTH_CONNECT permission (#1218)
+
+[0.9.18] - 2022-12-12
+
+* [Web] Bump dart_webrtc to 1.0.12, Convert iceconnectionstate to connectionstate for Firefox.
+* [Android] Start AudioSwitchManager only when audio track added (fix #1163) (#1196)
+* [iOS] Implement detachFromEngineForRegistrar (#1192)
+* [iOS] Handle Platform Exception on addCandidate (#1190)
+* [Native] Code format with clang-format.
+
+[0.9.17] - 2022-11-28
+
+* [Android] Update android webrtc version to 104.5112.05
+* [iOS] Update WebRTC.xframework version to 104.5112.07
+
+[0.9.16] - 2022-11-14
+
+* [Linux] Fixed compiler error for flutter 3.3.8.
+* [Linux] Remove 32-bit precompiled binaries.
+* [Linux] Supports linux-x64 and linux-arm64.
+
+[0.9.15] - 2022-11-13
+
+* [Linux] Add Linux Support.
+
+[0.9.14] - 2022-11-12
+
+* [iOS] Fix setSpeakerOn has no effect after change AVAudioSession mode to playback.
+
+[0.9.13] - 2022-11-12
+
+* [Dart] Change MediaStream.clone to async.
+* [iOS] Fixed the bug that the mic indicator light was still on when mic recording was stopped.
+* [iOS/macOS/Android/Windows] Allow sdpMLineIndex to be null when addCandidate.
+* [macOS] Frame capture support for MacOS.
+* [Android] Add enableCpuOveruseDetection configuration (#1165).
+* [Android] Update comments (#1164).
+
+[0.9.12] - 2022-11-02
+
+* [iOS] Fixed the problem that iOS earphones and speakers do not switch.
+* [Windows] fix bug for rtpSender->RemoveTrack/pc->getStats.
+* [iOS] Return groupId.
+* [Web] MediaRecorder.startWeb() should expose the timeslice parameter.
+* [iOS] Implement RTCPeerConnectionDelegate didRemoveIceCandidates method.
+* [iOS] fix disposing Broadcast Sharing stream.
+
 [0.9.11] - 2022-10-16
 
 * [iOS] fix audio route/setSpeakerphoneOn issues.
