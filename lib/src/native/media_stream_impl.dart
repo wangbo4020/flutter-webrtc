@@ -1,12 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:webrtc_interface/webrtc_interface.dart';
 
+import 'factory_impl.dart';
 import 'media_stream_track_impl.dart';
+import 'utils.dart';
 
 class MediaStreamNative extends MediaStream {
-  MediaStreamNative(String streamId, String ownerTag)
-      : super(streamId, ownerTag);
+  MediaStreamNative(super.streamId, super.ownerTag);
 
   factory MediaStreamNative.fromMap(Map<dynamic, dynamic> map) {
     return MediaStreamNative(map['streamId'], map['ownerTag'])
@@ -20,14 +21,14 @@ class MediaStreamNative extends MediaStream {
     _audioTracks.clear();
 
     for (var track in audioTracks) {
-      _audioTracks.add(MediaStreamTrackNative(
-          track['id'], track['label'], track['kind'], track['enabled']));
+      _audioTracks.add(MediaStreamTrackNative(track['id'], track['label'],
+          track['kind'], track['enabled'], ownerTag, track['settings'] ?? {}));
     }
 
     _videoTracks.clear();
     for (var track in videoTracks) {
-      _videoTracks.add(MediaStreamTrackNative(
-          track['id'], track['label'], track['kind'], track['enabled']));
+      _videoTracks.add(MediaStreamTrackNative(track['id'], track['label'],
+          track['kind'], track['enabled'], ownerTag, track['settings'] ?? {}));
     }
   }
 

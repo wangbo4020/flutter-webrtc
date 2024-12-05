@@ -45,9 +45,21 @@
 - (void)peerConnectionSetConfiguration:(nonnull RTCConfiguration*)configuration
                         peerConnection:(nonnull RTCPeerConnection*)peerConnection;
 
-- (void)peerConnectionGetRtpReceiverCapabilities:(nonnull NSDictionary*)argsMap result:(nonnull FlutterResult)result;
+- (void)peerConnectionGetRtpReceiverCapabilities:(nonnull NSDictionary*)argsMap
+                                          result:(nonnull FlutterResult)result;
 
-- (void)peerConnectionGetRtpSenderCapabilities:(nonnull NSDictionary*)argsMap result:(nonnull FlutterResult)result;
+- (void)peerConnectionGetRtpSenderCapabilities:(nonnull NSDictionary*)argsMap
+                                        result:(nonnull FlutterResult)result;
 
-- (void)transceiverSetCodecPreferences:(nonnull NSDictionary*)argsMap result:(nonnull FlutterResult)result;
+- (void)transceiverSetCodecPreferences:(nonnull NSDictionary*)argsMap
+                                result:(nonnull FlutterResult)result;
+
+- (nullable NSString*)stringForSignalingState:(RTCSignalingState)state;
+
+- (nullable NSString*)stringForICEGatheringState:(RTCIceGatheringState)state;
+
+- (nullable NSString*)stringForICEConnectionState:(RTCIceConnectionState)state;
+
+- (nullable NSString*)stringForPeerConnectionState:(RTCPeerConnectionState)state;
+
 @end

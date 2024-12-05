@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -11,12 +10,12 @@ import 'rtc_video_renderer_impl.dart';
 class RTCVideoView extends StatefulWidget {
   RTCVideoView(
       this._renderer, {
-        Key? key,
+        super.key,
         this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
         this.mirror = false,
         this.filterQuality = FilterQuality.low,
         this.placeholderBuilder,
-      }) : super(key: key);
+      }) ;
 
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
@@ -39,9 +38,9 @@ class RTCVideoViewState extends State<RTCVideoView> {
     videoRenderer.addListener(_onRendererListener);
     videoRenderer.mirror = widget.mirror;
     videoRenderer.objectFit =
-    widget.objectFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
-        ? 'contain'
-        : 'cover';
+        widget.objectFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
+            ? 'contain'
+            : 'cover';
   }
 
   void _onRendererListener() {
@@ -61,18 +60,13 @@ class RTCVideoViewState extends State<RTCVideoView> {
     Timer(
         Duration(milliseconds: 10), () => videoRenderer.mirror = widget.mirror);
     videoRenderer.objectFit =
-    widget.objectFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
-        ? 'contain'
-        : 'cover';
+        widget.objectFit == RTCVideoViewObjectFit.RTCVideoViewObjectFitContain
+            ? 'contain'
+            : 'cover';
   }
 
   Widget buildVideoElementView() {
-    return Transform(
-      alignment: Alignment.center,
-      transform: Matrix4.rotationY(videoRenderer.mirror ? pi * -1 : 0),
-      child: HtmlElementView(
-          viewType: 'RTCVideoRenderer-${videoRenderer.textureId}'),
-    );
+    return HtmlElementView(viewType: videoRenderer.viewType);
   }
 
   @override

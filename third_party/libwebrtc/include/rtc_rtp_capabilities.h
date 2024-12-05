@@ -3,10 +3,8 @@
 
 #include "base/refcount.h"
 #include "base/scoped_ref_ptr.h"
-
 #include "rtc_rtp_parameters.h"
 #include "rtc_types.h"
-
 
 namespace libwebrtc {
 
@@ -29,7 +27,7 @@ class RTCRtpCodecCapability : public RefCountInterface {
 };
 
 class RTCRtpHeaderExtensionCapability : public RefCountInterface {
-public:
+ public:
   virtual const string uri() = 0;
   virtual void set_uri(const string uri) = 0;
 
@@ -41,7 +39,7 @@ public:
 };
 
 class RTCRtpCapabilities : public RefCountInterface {
-public:
+ public:
   virtual const vector<scoped_refptr<RTCRtpCodecCapability>> codecs() = 0;
   virtual void set_codecs(
       const vector<scoped_refptr<RTCRtpCodecCapability>> codecs) = 0;
@@ -53,8 +51,8 @@ public:
       const vector<scoped_refptr<RTCRtpHeaderExtensionCapability>>
           header_extensions) = 0;
 
-  //virtual const vector<scoped_refptr<RTCFecMechanism>> fec() = 0;
-  //virtual void set_fec(const vector<scoped_refptr<RTCFecMechanism>> fec) = 0;
+  // virtual const vector<scoped_refptr<RTCFecMechanism>> fec() = 0;
+  // virtual void set_fec(const vector<scoped_refptr<RTCFecMechanism>> fec) = 0;
 };
 
 }  // namespace libwebrtc

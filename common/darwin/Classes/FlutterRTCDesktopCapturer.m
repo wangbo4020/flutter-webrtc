@@ -8,6 +8,9 @@
 #import "FlutterRPScreenRecorder.h"
 #endif
 
+#import "VideoProcessingAdapter.h"
+#import "LocalVideoTrack.h"
+
 #if TARGET_OS_OSX
 RTCDesktopMediaList* _screen = nil;
 RTCDesktopMediaList* _window = nil;
@@ -21,7 +24,8 @@ NSArray<RTCDesktopSource*>* _captureSources;
   RTCMediaStream* mediaStream = [self.peerConnectionFactory mediaStreamWithStreamId:mediaStreamId];
   RTCVideoSource* videoSource = [self.peerConnectionFactory videoSourceForScreenCast:YES];
   NSString* trackUUID = [[NSUUID UUID] UUIDString];
-
+  VideoProcessingAdapter *videoProcessingAdapter = [[VideoProcessingAdapter alloc] initWithRTCVideoSource:videoSource];
+  
 #if TARGET_OS_IPHONE
   BOOL useBroadcastExtension = false;
   id videoConstraints = constraints[@"video"];
@@ -51,15 +55,17 @@ NSArray<RTCDesktopSource*>* _captureSources;
   if (useBroadcastExtension) {
     NSString* extension =
         [[[NSBundle mainBundle] infoDictionary] valueForKey:kRTCScreenSharingExtension];
-    if (extension) {
-      RPSystemBroadcastPickerView* picker = [[RPSystemBroadcastPickerView alloc] init];
-      picker.preferredExtension = extension;
-      picker.showsMicrophoneButton = false;
 
-      SEL selector = NSSelectorFromString(@"buttonPressed:");
-      if ([picker respondsToSelector:selector]) {
-        [picker performSelector:selector withObject:nil];
-      }
+    RPSystemBroadcastPickerView* picker = [[RPSystemBroadcastPickerView alloc] init];
+    picker.showsMicrophoneButton = false;
+    if (extension) {
+      picker.preferredExtension = extension;
+    } else {
+      NSLog(@"Not able to find the %@ key", kRTCScreenSharingExtension);
+    }
+    SEL selector = NSSelectorFromString(@"buttonPressed:");
+    if ([picker respondsToSelector:selector]) {
+      [picker performSelector:selector withObject:nil];
     }
   }
 #endif
@@ -106,9 +112,10 @@ NSArray<RTCDesktopSource*>* _captureSources;
   }
   RTCDesktopCapturer* desktopCapturer;
   RTCDesktopSource* source = nil;
+    
   if (useDefaultScreen) {
     desktopCapturer = [[RTCDesktopCapturer alloc] initWithDefaultScreen:self
-                                                        captureDelegate:videoSource];
+                                                        captureDelegate:videoProcessingAdapter];
   } else {
     source = [self getSourceById:sourceId];
     if (source == nil) {
@@ -117,7 +124,7 @@ NSArray<RTCDesktopSource*>* _captureSources;
     }
     desktopCapturer = [[RTCDesktopCapturer alloc] initWithSource:source
                                                         delegate:self
-                                                 captureDelegate:videoSource];
+                                                 captureDelegate:videoProcessingAdapter];
   }
   [desktopCapturer startCaptureWithFPS:fps];
   NSLog(@"start desktop capture: sourceId: %@, type: %@, fps: %lu", sourceId,
@@ -130,12 +137,14 @@ NSArray<RTCDesktopSource*>* _captureSources;
     handler();
   };
 #endif
-
+    
   RTCVideoTrack* videoTrack = [self.peerConnectionFactory videoTrackWithSource:videoSource
                                                                        trackId:trackUUID];
   [mediaStream addVideoTrack:videoTrack];
 
-  [self.localTracks setObject:videoTrack forKey:trackUUID];
+  LocalVideoTrack *localVideoTrack = [[LocalVideoTrack alloc] initWithTrack:videoTrack videoProcessing:videoProcessingAdapter];
+    
+  [self.localTracks setObject:localVideoTrack forKey:trackUUID];
 
   NSMutableArray* audioTracks = [NSMutableArray array];
   NSMutableArray* videoTracks = [NSMutableArray array];
@@ -270,7 +279,7 @@ NSArray<RTCDesktopSource*>* _captureSources;
   NSRect imageRect = NSMakeRect(0.0, 0.0, width, height);
 
   [newImage lockFocus];
-  [sourceImage drawInRect:thumbnailRect fromRect:imageRect operation:NSCompositeCopy fraction:1.0];
+    [sourceImage drawInRect:thumbnailRect fromRect:imageRect operation:NSCompositingOperationCopy fraction:1.0];
   [newImage unlockFocus];
 
   return newImage;
@@ -344,7 +353,7 @@ NSArray<RTCDesktopSource*>* _captureSources;
       NSImage* resizedImg = [self resizeImage:image forSize:NSMakeSize(320, 180)];
       data = [resizedImg TIFFRepresentation];
     }
-    self.eventSink(@{
+    postEvent(self.eventSink, @{
       @"event" : @"desktopSourceAdded",
       @"id" : source.sourceId,
       @"name" : source.name,
@@ -359,7 +368,7 @@ NSArray<RTCDesktopSource*>* _captureSources;
 - (void)didDesktopSourceRemoved:(RTC_OBJC_TYPE(RTCDesktopSource) *)source {
   // NSLog(@"didDesktopSourceRemoved: %@, id %@", source.name, source.sourceId);
   if (self.eventSink) {
-    self.eventSink(@{
+    postEvent(self.eventSink, @{
       @"event" : @"desktopSourceRemoved",
       @"id" : source.sourceId,
     });
@@ -370,7 +379,7 @@ NSArray<RTCDesktopSource*>* _captureSources;
 - (void)didDesktopSourceNameChanged:(RTC_OBJC_TYPE(RTCDesktopSource) *)source {
   // NSLog(@"didDesktopSourceNameChanged: %@, id %@", source.name, source.sourceId);
   if (self.eventSink) {
-    self.eventSink(@{
+    postEvent(self.eventSink, @{
       @"event" : @"desktopSourceNameChanged",
       @"id" : source.sourceId,
       @"name" : source.name,
@@ -384,7 +393,7 @@ NSArray<RTCDesktopSource*>* _captureSources;
   if (self.eventSink) {
     NSImage* resizedImg = [self resizeImage:[source thumbnail] forSize:NSMakeSize(320, 180)];
     NSData* data = [resizedImg TIFFRepresentation];
-    self.eventSink(@{
+    postEvent(self.eventSink, @{
       @"event" : @"desktopSourceThumbnailChanged",
       @"id" : source.sourceId,
       @"thumbnail" : data

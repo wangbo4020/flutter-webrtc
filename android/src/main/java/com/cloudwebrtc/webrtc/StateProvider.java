@@ -9,6 +9,8 @@ import org.webrtc.MediaStream;
 import org.webrtc.MediaStreamTrack;
 import org.webrtc.PeerConnectionFactory;
 
+import io.flutter.plugin.common.BinaryMessenger;
+
 /**
  * Provides interested components with access to the current application state.
  *
@@ -18,9 +20,9 @@ public interface StateProvider {
 
   boolean putLocalStream(String streamId, MediaStream stream);
 
-  boolean putLocalTrack(String trackId, MediaStreamTrack track);
+  boolean putLocalTrack(String trackId, LocalTrack track);
 
-  MediaStreamTrack getLocalTrack(String trackId);
+  LocalTrack getLocalTrack(String trackId);
 
   String getNextStreamUUID();
 
@@ -28,9 +30,13 @@ public interface StateProvider {
 
   PeerConnectionFactory getPeerConnectionFactory();
 
+  PeerConnectionObserver getPeerConnectionObserver(String peerConnectionId);
+
   @Nullable
   Activity getActivity();
 
   @Nullable
   Context getApplicationContext();
+
+  BinaryMessenger getMessenger();
 }
