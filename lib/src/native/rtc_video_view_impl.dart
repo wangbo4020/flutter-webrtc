@@ -14,6 +14,7 @@ class RTCVideoView extends StatelessWidget {
     this.mirror = false,
     this.filterQuality = FilterQuality.low,
     this.placeholderBuilder,
+    this.wrapBuilder,
   });
 
   final RTCVideoRenderer _renderer;
@@ -21,6 +22,7 @@ class RTCVideoView extends StatelessWidget {
   final bool mirror;
   final FilterQuality filterQuality;
   final WidgetBuilder? placeholderBuilder;
+  final WrapBuilder? wrapBuilder;
 
   RTCVideoRenderer get videoRenderer => _renderer;
 
@@ -46,6 +48,9 @@ class RTCVideoView extends StatelessWidget {
               valueListenable: videoRenderer,
               builder:
                   (BuildContext context, RTCVideoValue value, Widget? child) {
+                if (wrapBuilder != null) {
+                  child = wrapBuilder!.call(context, child, Size(constraints.maxWidth, constraints.maxHeight));
+                }
                 return SizedBox(
                   width: constraints.maxHeight * value.aspectRatio,
                   height: constraints.maxHeight,
@@ -69,3 +74,5 @@ class RTCVideoView extends StatelessWidget {
     );
   }
 }
+
+typedef WrapBuilder = Widget Function(BuildContext context, Widget? child, Size size);

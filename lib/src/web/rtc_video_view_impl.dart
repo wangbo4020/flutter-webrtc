@@ -14,19 +14,21 @@ import 'rtc_video_renderer_impl.dart';
 
 class RTCVideoView extends StatefulWidget {
   RTCVideoView(
-      this._renderer, {
-        super.key,
-        this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
-        this.mirror = false,
-        this.filterQuality = FilterQuality.low,
-        this.placeholderBuilder,
-      }) ;
+    this._renderer, {
+    super.key,
+    this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
+    this.mirror = false,
+    this.filterQuality = FilterQuality.low,
+    this.placeholderBuilder,
+    this.wrapBuilder,
+  });
 
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
   final bool mirror;
   final FilterQuality filterQuality;
   final WidgetBuilder? placeholderBuilder;
+  final WrapBuilder? wrapBuilder;
 
   @override
   RTCVideoViewState createState() => RTCVideoViewState();
@@ -191,13 +193,17 @@ class RTCVideoViewState extends State<RTCVideoView> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
+        var child = widget._renderer.renderVideo
+            ? buildVideoElementView()
+            : widget.placeholderBuilder?.call(context) ?? Container();
+        if (widget.wrapBuilder != null) {
+          child = widget.wrapBuilder!.call(context, child, Size(constraints.maxWidth, constraints.maxHeight));
+        }
         return Center(
           child: Container(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
-            child: widget._renderer.renderVideo
-                ? buildVideoElementView()
-                : widget.placeholderBuilder?.call(context) ?? Container(),
+            child: child,
           ),
         );
       },
@@ -254,3 +260,5 @@ class _ImageFlipPainter extends CustomPainter {
     return false;
   }
 }
+
+typedef WrapBuilder = Widget Function(BuildContext context, Widget? child, Size size);
