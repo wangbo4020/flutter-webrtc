@@ -19,7 +19,13 @@ const List<String> audioCodecList = <String>[
   'PCMU',
   'G729'
 ];
-const List<String> videoCodecList = <String>['VP8', 'VP9', 'H264', 'AV1'];
+const List<String> videoCodecList = <String>[
+  'VP8',
+  'VP9',
+  'H264',
+  'H265',
+  'AV1'
+];
 
 class _MyAppState extends State<LoopBackSampleUnifiedTracks> {
   String audioDropdownValue = audioCodecList.first;
@@ -132,7 +138,9 @@ class _MyAppState extends State<LoopBackSampleUnifiedTracks> {
   }
 
   void _selectAudioInput(String deviceId) async {
-    await Helper.selectAudioInput(deviceId);
+    if (!WebRTC.platformIsWeb) {
+      await Helper.selectAudioInput(deviceId);
+    }
   }
 
   void _cleanUp() async {
@@ -539,7 +547,9 @@ class _MyAppState extends State<LoopBackSampleUnifiedTracks> {
   void _switchSpeaker() async {
     setState(() {
       _speakerOn = !_speakerOn;
-      Helper.setSpeakerphoneOn(_speakerOn);
+      if (!WebRTC.platformIsWeb) {
+        Helper.setSpeakerphoneOn(_speakerOn);
+      }
     });
   }
 
