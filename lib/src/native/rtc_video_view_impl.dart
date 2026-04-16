@@ -8,13 +8,13 @@ import 'rtc_video_renderer_impl.dart';
 
 class RTCVideoView extends StatelessWidget {
   RTCVideoView(
-      this._renderer, {
-        super.key,
-        this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
-        this.mirror = false,
-        this.filterQuality = FilterQuality.low,
-        this.placeholderBuilder,
-      }) ;
+    this._renderer, {
+    super.key,
+    this.objectFit = RTCVideoViewObjectFit.RTCVideoViewObjectFitContain,
+    this.mirror = false,
+    this.filterQuality = FilterQuality.low,
+    this.placeholderBuilder,
+  });
 
   final RTCVideoRenderer _renderer;
   final RTCVideoViewObjectFit objectFit;
